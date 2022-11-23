@@ -1,2 +1,5 @@
 Data
 .Rhistory
+config/*
+
+!config/config_ex.R
