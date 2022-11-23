@@ -1,7 +1,3 @@
-rm(list=ls())
-
-resolution <- 2
-
 #--Libraries
 library(ncdf4) # package for netcdf manipulation
 library(chron) 
@@ -11,9 +7,7 @@ library(ggplot2)
 library(plyr)
 
 #set path and filename
-PATH_DATA<-"D:/Stage_Jeanne/Data/Netcdf/SLA/"
-nc_file <- "cmems_obs-sl_glo_phy-ssh_my_allsat-l4-duacs-0.25deg_P1M-m_1648036488919.nc"
-nc_name <- paste(PATH_DATA, nc_file, sep = "")
+nc_name <- file.path(PATH_DATA, "Netcdf/SLA", SLA_FILE)
 
 #open the NetCDF file
 nc <- nc_open(nc_name)
@@ -57,7 +51,7 @@ fillvalue <- ncatt_get(nc, varsla, "_FillValue")  #(optional)
 ## put NA values for missing values in the NetCDF file
 T_array[T_array == fillvalue$value] <- NA
 
-#estimate mean for each year, month and 2° cell
+#estimate mean for each year, month and 2? cell
 
 grid <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
 df_meantot<-data.frame(matrix(nrow=0,ncol=6))
@@ -77,4 +71,4 @@ for(iyear in c(2014:2019)){
   }
 }
 
-write.csv(df_meantot,file="SLA_mean.csv",row.names = F,col.names = T)
+write.csv(df_meantot,file=file.path(PATH_OUTPUT, "SLA_mean.csv"),row.names = F)

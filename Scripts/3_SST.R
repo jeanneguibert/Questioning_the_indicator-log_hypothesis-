@@ -1,8 +1,3 @@
-rm(list=ls())
-
-### parameters
-resolution<-2
-
 #--Libraries
 library(ncdf4) # package for netcdf manipulation
 library(chron) 
@@ -12,9 +7,7 @@ library(ggplot2)
 library(plyr)
 
 #set path and filename
-PATH_DATA<-"D:/Stage_Jeanne/Data/Netcdf/SST/"
-nc_file <- "dataset-armor-3d-rep-monthly_1647784901742.nc"
-nc_name <- paste(PATH_DATA, nc_file, sep = "")
+nc_name <- file.path(PATH_DATA, "Netcdf/SST", SST_FILE)
 
 #open the NetCDF file
 nc <- nc_open(nc_name)
@@ -79,4 +72,4 @@ for(iyear in c(2014:2019)){
   }
 }
 
-write.csv(df_meantot,file="SST_mean.csv",row.names = F,col.names = T)
+write.csv(df_meantot,file=file.path(PATH_OUTPUT, "SST_mean.csv"),row.names = F)

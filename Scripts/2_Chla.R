@@ -1,8 +1,3 @@
-rm(list=ls())
-
-### parameters
-resolution<-2
-
 #--Libraries
 library(ncdf4) # package for netcdf manipulation
 library(chron) 
@@ -13,10 +8,7 @@ library(plyr)
 library(lubridate)
 
 #set path and filename
-PATH_DATA<-"D:/Stage_Jeanne/Data/Netcdf/Chla/"
-setwd("D:/Stage_Jeanne/Data/Netcdf/Chla/")
-nc_file <- "dataset-oc-glo-bio-multi-l4-chl_4km_monthly-rep_1647279209469.nc"
-nc_name <- paste(PATH_DATA, nc_file, sep = "")
+nc_name <- file.path(PATH_DATA, "Netcdf/Chla", CHLA_FILE)
 
 #open the NetCDF file
 nc <- nc_open(nc_name)
@@ -77,4 +69,4 @@ for(iyear in c(2014:2019)){
 }
 
 
-write.csv(df_meantot,file="Chla_mean.csv",row.names = F,col.names = T)
+write.csv(df_meantot,file=file.path(PATH_OUTPUT,"Chla_mean.csv"),row.names = F)

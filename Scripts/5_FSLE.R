@@ -1,7 +1,3 @@
-rm(list=ls())
-
-resolution <- 2
-
 #--Libraries
 library(ncdf4) # package for netcdf manipulation
 library(chron) 
@@ -10,20 +6,16 @@ library(readr)
 library(ggplot2)
 
 #set path and filename
-PATH_DATA<-"D:/Stage_Jeanne/Data/Netcdf/FSLE/"
-file_list<-list.files(PATH_DATA)
+file_list<-list.files(file.path(PATH_DATA, "Netcdf/FSLE"), full.names = T, pattern = ".nc$")
 
 df_meantot<-data.frame(matrix(nrow=0,ncol=6))
 colnames(df_meantot)=c("lat_grid", "lon_grid","FSLEmean", "FSLEsd", "year", "month")
 
 for (ifile in file_list){
-  nc_file <- ifile
-  nc_name <- paste(PATH_DATA, nc_file, sep = "")
-  nc_name
 
   #open the NetCDF file
-  nc <- nc_open(nc_name)
-  print(nc)
+  nc <- nc_open(ifile)
+  # print(nc)
 
   lon <- ncvar_get(nc, "lon")
   lat <- ncvar_get(nc, "lat")
@@ -44,7 +36,6 @@ for (ifile in file_list){
 
 #Pour avoir l'annee, le mois ou le jour :
 mydate<-chron(time,origin=c(t_month, t_day, t_year))
-library("lubridate")
 mydate<-as.Date(mydate,'%m/%d/%Y')
 myyear<-year(mydate)
 mymonth<-month(mydate)
@@ -92,4 +83,4 @@ iyear<-unique(myyear)
    invisible(gc())
 }
 
-write.csv(df_meantot,file="FSLE_mean.csv",row.names = F,col.names = T)
+write.csv(df_meantot,file=file.path(PATH_OUTPUT, "FSLE_mean.csv"),row.names = F)

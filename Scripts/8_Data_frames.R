@@ -1,17 +1,16 @@
-rm(list=ls())
+rm(list=ls()[!ls() %in% toKeep])
 
 library("plyr")
-library("ggplot2")
-setwd("D:/Stage_Jeanne/Data")
+
 
 ##################### Open files ###################
-dfNLOG<-read.csv("NLOG_density.csv", header = T)
-dfChla<-read.csv("Chla_mean.csv", header = T)
-dfSST<-read.csv("SST_mean.csv", header = T)
-dfSLA<-read.csv("SLA_mean.csv", header = T)
-dfFSLE<-read.csv("FSLE_mean.csv", header = T)
-dfSSCI<-read.csv("SSCI_mean.csv", header = T)
-dfMN<-read.csv("MN_epi_mean.csv", header = T)
+dfNLOG<-read.csv(file.path(PATH_OUTPUT, "NLOG_density.csv"), header = T)
+dfChla<-read.csv(file.path(PATH_OUTPUT, "Chla_mean.csv"), header = T)
+dfSST<-read.csv(file.path(PATH_OUTPUT, "SST_mean.csv"), header = T)
+dfSLA<-read.csv(file.path(PATH_OUTPUT, "SLA_mean.csv"), header = T)
+dfFSLE<-read.csv(file.path(PATH_OUTPUT, "FSLE_mean.csv"), header = T)
+dfSSCI<-read.csv(file.path(PATH_OUTPUT, "SSCI_mean.csv"), header = T)
+dfMN<-read.csv(file.path(PATH_OUTPUT, "MN_epi_mean.csv"), header = T)
 
 colnames(dfMN)[3] <- "MNmean"
 colnames(dfMN)[4] <- "MNsd"
@@ -36,31 +35,31 @@ dftot$Season <- ifelse(dftot$month%in%c(10,11),"ON",dftot$Season)
 dftot$Season <-  as.factor(dftot$Season)
 summary(dftot)
 
-write.csv(dftot, "NLOG_VE", row.names = F)
+write.csv(dftot, file.path(PATH_OUTPUT,"NLOG_VE.csv"), row.names = F)
 
-#### Présence NLOG ####
+#### Pr?sence NLOG ####
 
-NLOG_VE<-read.csv("NLOG_VE.csv", header = T)
+NLOG_VE<-read.csv(file.path(PATH_OUTPUT,"NLOG_VE.csv"), header = T)
 
 NLOG_VE_sup_zero <- NLOG_VE[NLOG_VE$NumNLOG>0,]
 #Moz <10S
 NLOG_VE_sup_zero_Moz <- NLOG_VE_sup_zero[NLOG_VE_sup_zero$Zone=="Moz",]
-#North >10°S
+#North >10?S
 NLOG_VE_sup_zero_North <- NLOG_VE_sup_zero[NLOG_VE_sup_zero$Zone=="Above_10S",]
 
-write.csv(NLOG_VE_sup_zero, "NLOG_VE_sup_zero", row.names = F)
-write.csv(NLOG_VE_sup_zero_Moz, "NLOG_VE_sup_zero_Moz", row.names = F)
-write.csv(NLOG_VE_sup_zero_North, "NLOG_VE_sup_zero_North", row.names = F)
+write.csv(NLOG_VE_sup_zero, file.path(PATH_OUTPUT,"NLOG_VE_sup_zero.csv"), row.names = F)
+write.csv(NLOG_VE_sup_zero_Moz, file.path(PATH_OUTPUT,"NLOG_VE_sup_zero_Moz.csv"), row.names = F)
+write.csv(NLOG_VE_sup_zero_North, file.path(PATH_OUTPUT,"NLOG_VE_sup_zero_North.csv"), row.names = F)
 
 #### Absence NLOG
 
 NLOG_VE_zero <- NLOG_VE[NLOG_VE$NumNLOG==0,]
 #Moz <10S
 NLOG_VE_zero_Moz <- NLOG_VE_zero[NLOG_VE_zero$Zone=="Moz",]
-#North >10°S
+#North >10?S
 NLOG_VE_zero_North <- NLOG_VE_zero[NLOG_VE_zero$Zone=="Above_10S",]
 
-write.csv(NLOG_VE_zero, "NLOG_VE_zero", row.names = F)
-write.csv(NLOG_VE_zero_Moz, "NLOG_VE_zero_Moz", row.names = F)
-write.csv(NLOG_VE_zero_North, "NLOG_VE_zero_North", row.names = F)
+write.csv(NLOG_VE_zero, file.path(PATH_OUTPUT,"NLOG_VE_zero.csv"), row.names = F)
+write.csv(NLOG_VE_zero_Moz, file.path(PATH_OUTPUT,"NLOG_VE_zero_Moz.csv"), row.names = F)
+write.csv(NLOG_VE_zero_North, file.path(PATH_OUTPUT,"NLOG_VE_zero_North.csv"), row.names = F)
 
