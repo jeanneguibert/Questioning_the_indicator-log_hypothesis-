@@ -1,4 +1,4 @@
-"lat_grid","lon_grid","micronec_epi","micronec_episd","year","month"
+"lat_grid","lon_grid","micronec_umeso","micronec_umesosd","year","month"
 -20,40,0.56564652474971,NA,2014,1
 -20,42,0.645329074298603,NA,2014,1
 -20,48,0.349705189130477,NA,2014,1

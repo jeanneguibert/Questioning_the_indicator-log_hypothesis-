@@ -85,6 +85,8 @@ for (idir in subdir_list){
       df$lat_grid<-resolution*floor(df$lat/resolution) 
       df$lon_grid<-resolution*floor(df$lon/resolution) 
       df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,micronec_epi=mean(micronec_epi),micronec_episd=sd(micronec_epi))#moyenne
+      names(df_mean)[which(names(df_mean) == "micronec_epi")] <- paste0("micronec_",idir)
+      names(df_mean)[which(names(df_mean) == "micronec_episd")] <- paste0("micronec_",idir,"sd")
       df_mean$year<-iyear
       df_mean$month<-imonth
       df_meantot<-rbind(df_meantot,df_mean)
