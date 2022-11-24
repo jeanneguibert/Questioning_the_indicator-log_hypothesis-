@@ -20,7 +20,7 @@ data_fob$lon_grid<-floor(data_fob$longitude/resolution)*resolution
 data_NLOG<-subset(data_fob,fob_type=="NLOG")
 
 ##Process ACTIVITY DATA ####################################
-ttob7 <- read.csv(file = file.path(PATH_DATA, "all_vessel_activities_observe_fr_indian.csv"))
+ttob7 <- read.csv(file = file.path(PATH_DATA, VESSEL_ACTIVITY_FILE))
 data_obs <- data.frame(ttob7$vessel_name,ttob7$observation_date,ttob7$latitude,ttob7$longitude,ttob7$vessel_activity)
 names(data_obs) <- c("vessel","observation_date","latitude","longitude","activity")
 data_obs$day <- lubridate::day(data_obs$observation_date)
