@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
 [![Latest Release](https://img.shields.io/github/release/jeanneguibert/Testing_indicator_log)](https://github.com/adupaix/jeanneguibert/Testing_indicator_log) -->
 
-These are the scripts which were used to generate the results presented in the following study, submitted in:
+These are the scripts which were used to generate the results presented in the following study:
 
 Guibert J., Dupaix A., Lengaigne M. & Capello M. (in press) Questioning the validity of the indicator-log hypothesis for tropical tuna.
 
