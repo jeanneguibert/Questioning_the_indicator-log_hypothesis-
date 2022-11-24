@@ -12,7 +12,7 @@ nc_name <- file.path(PATH_DATA, "Netcdf/Chla", CHLA_FILE)
 
 #open the NetCDF file
 nc <- nc_open(nc_name)
-print(nc)
+#print(nc)
 
 lon <- ncvar_get(nc, "lon")
 lat <- ncvar_get(nc, "lat")

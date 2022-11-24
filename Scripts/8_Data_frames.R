@@ -33,7 +33,7 @@ dftot$Season <- ifelse(dftot$month%in%c(6,7,8,9),"JJAS",dftot$Season)
 dftot$Season <- ifelse(dftot$month%in%c(10,11),"ON",dftot$Season)
 
 dftot$Season <-  as.factor(dftot$Season)
-summary(dftot)
+#summary(dftot)
 
 write.csv(dftot, file.path(PATH_OUTPUT,"NLOG_VE.csv"), row.names = F)
 

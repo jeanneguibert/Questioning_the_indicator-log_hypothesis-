@@ -6,25 +6,25 @@ dir.create(PATH_OUTPUT)
 if(READ_DATA){
   cat("Reading raw datasets\n==================\n\n")
   # source the script calculating the NLOG densities from observers data
-  cat("Reading observers data\n")
+  cat("    Processing observers data\n")
   source(file.path(WD, "Scripts", "1_NLOG_density.R"))
   
-  cat("Reading Chlorophyll a data\n")
+  cat("    Processing Chlorophyll a data\n")
   source(file.path(WD, "Scripts", "2_Chla.R"))
   
-  cat("Reading SST data\n")
+  cat("    Processing SST data\n")
   source(file.path(WD, "Scripts", "3_SST.R"))
   
-  cat("Reading SLA data\n") 
+  cat("    Processing SLA data\n") 
   source(file.path(WD, "Scripts", "4_SLA.R"))
   
-  cat("Reading FSLE data\n")
+  cat("    Processing FSLE data\n")
   source(file.path(WD, "Scripts", "5_FSLE.R"))
   
-  cat("Reading SSCI data\n")
+  cat("    Processing SSCI data\n")
   source(file.path(WD, "Scripts", "6_SSCI.R"))
   
-  cat("Reading MN data\n")
+  cat("    Processing MN data\n")
   source(file.path(WD, "Scripts", "7_MN.R"))
 } else {
   cat("Reading processed datasets\n==================\n")
