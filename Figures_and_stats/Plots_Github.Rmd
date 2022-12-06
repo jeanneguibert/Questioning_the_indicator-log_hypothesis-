@@ -103,7 +103,11 @@ fig1 <- ggplot(aes(x=c(35, 85), y=c(-25, 25)), data=Ob7_NLOG) +
   theme(panel.border = element_rect(fill = NA, colour = "black"))+
   theme(text = element_text(size = 15))+
   theme(axis.text.x = element_text(size = 15))+
-  theme(axis.text.y = element_text(size = 15))
+  theme(axis.text.y = element_text(size = 15))+
+  annotate(geom="text", x=81, y=-7, label="\U2265 10°S",
+              color="black", fontface="bold", size=4)+ #\U2265 is the code for the >= symbol 
+  annotate(geom="text", x=81, y=-13, label="< 10°S",
+              color="black", fontface="bold", size=4)
 ```
 
 ## Save plot
@@ -123,7 +127,7 @@ fig2 <- ggplot(data = Ob7_NLOG) +
   scale_x_continuous(name="Years", breaks=c(2014,2015,2016,2017,2018,2019),  
                      labels = c("2014","2015","2016","2017","2018","2019"))+
   scale_fill_manual(values = c("grey48","grey86"), name = "Zone",  
-                    labels = c (">10°S","<10°S"))+
+                    labels = c ("\U2265 10°S","< 10°S"))+
   theme(panel.border = element_rect(fill = NA, colour = "black"))+
   theme(text = element_text(size = 25))+
   theme(axis.text.x = element_text(size = 25))+
@@ -458,7 +462,7 @@ ggsave(file=file.path(PATH_FIG, "Fig3.eps"), fig3,width = 35, height = 50, units
 #SSCI
 f4.ssci <- ggplot(NLOG_VE_sup_zero)+
   geom_point(aes(x = SSCImean, y = NLOG_stand, shape = Zone),size = 3)+
-  scale_shape_manual(values = c(1, 17),label = c(">10°S","<10°S"))+
+  scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
   scale_x_continuous(breaks=c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7))+
   xlab("Mean SSCI (m.s-1)")+
   ylab("NLOG abundance index 
