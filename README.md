@@ -6,7 +6,7 @@
 
 These are the scripts which were used to generate the results presented in the following study:
 
-Guibert J., Dupaix A., Lengaigne M. & Capello M. (in press) Questioning the validity of the indicator-log hypothesis for tropical tuna.
+Guibert J., Dupaix A., Lengaigne M. & Capello M. (in press) Questioning the validity of the indicator-log hypothesis for tropical tuna in the Western Indian Ocean.
 
 Figures and statistical analyses of the study are available in the `Figure_and_stats` folder.
 
