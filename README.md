@@ -1,14 +1,14 @@
 # Questioning the validity of the indicator-log hypothesis for tropical tuna
 
-<!-- [![License](https://img.shields.io/github/license/jeanneguibert/Testing_indicator_log)](https://github.com/jeanneguibert/Testing_indicator_log/blob/master/LICENSE)
+<!-- [![License](https://img.shields.io/github/license/jeanneguibert/Questioning_the_indicator-log_hypothesis-)](https://github.com/jeanneguibert/Questioning_the_indicator-log_hypothesis-/blob/master/LICENSE)
 [![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
-[![Latest Release](https://img.shields.io/github/release/jeanneguibert/Testing_indicator_log)](https://github.com/adupaix/jeanneguibert/Testing_indicator_log) -->
+[![Latest Release](https://img.shields.io/github/release/jeanneguibert/Questioning_the_indicator-log_hypothesis-)](https://github.com/adupaix/jeanneguibert/Questioning_the_indicator-log_hypothesis-) -->
 
 These are the scripts which were used to generate the results presented in the following study:
 
 Guibert J., Dupaix A., Lengaigne M. & Capello M. (in press) Questioning the validity of the indicator-log hypothesis for tropical tuna in the Western Indian Ocean.
 
-Figures and statistical analyses of the study are available in the `Figure_and_stats` folder.
+Figures and statistical analyses of the study are available in the `Figure_and_stats` folder: `Plots_Github.Rmd` and `Statistical_analyses_Github.Rmd` generates the figures and the statistical tests respectively, of the main study and the supplementary materials.
 
 ## To launch the scripts
 
