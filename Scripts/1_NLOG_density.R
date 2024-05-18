@@ -2,14 +2,14 @@ set.seed(12345678) #####
 
 ##Process NLOG data###################################
 source(file.path(PATH_FUNC, "Prep_obs.R"))
-source(file.path(PATH_FUNC, "Maps/Maps_VJ.R"))
-source(file.path(PATH_FUNC,"Maps/1.1.subfunctions_maps_obs.R"))
+# source(file.path(PATH_FUNC, "Maps/Maps_VJ.R"))
+# source(file.path(PATH_FUNC,"Maps/1.1.subfunctions_maps_obs.R"))
 operation <- read.csv(file.path(PATH_DATA,OBS_FILE), header = TRUE, sep = ",",
                       dec = ".", fill = TRUE, stringsAsFactors = T)
 Ob7 <- prep.obs(operation)
 
 
-data_fob<-data.frame(Ob7$observation_date,Ob7$latitude,Ob7$longitude,Ob7$obj_conv)
+data_fob<-data.frame(as.Date(Ob7$observation_date),Ob7$latitude,Ob7$longitude,Ob7$obj_conv)
 names(data_fob)<-c("observation_date","latitude","longitude","fob_type")
 data_fob$month <- lubridate::month(data_fob$observation_date)
 data_fob$year <- lubridate::year(data_fob$observation_date)
@@ -49,7 +49,7 @@ df$NumNLOG<-ifelse(is.na(df$NumNLOG),0,df$NumNLOG)
 df <- df[df$lat_grid >= -20,]
 
 #### Set time limits ##########################################################
-df_NLOGdensity <- df[df$year>2013 & df$year<2020,]
+df_NLOGdensity <- df[df$year>=min(YEARS) & df$year<=max(YEARS),]
 
 #### Create colum with nb NLOG / nb Obs ##########################################################
 df_NLOGdensity$NLOG_stand <- df_NLOGdensity$NumNLOG / df_NLOGdensity$NumOBS

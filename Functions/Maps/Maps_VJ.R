@@ -26,7 +26,7 @@ library("sf")## objet de type sf pour les
 library("ggspatial")#superposer les cartes et legende
 library("rnaturalearth")
 library("rnaturalearthdata")# carte du monde
-library("rgeos")
+# library("rgeos")
 library(raster)
 library(rworldmap)
 library(shape)
@@ -199,7 +199,7 @@ map_occurence <- function(Ob7, DATA_PATH, year = 0, obj.type = "all", gsize = 2,
   }
   
    ## C. GGPLOT ----
-  ##Attention : coordonnées modifiées
+  ##Attention : coordonn?es modifi?es
   p<- ggplot() +
     geom_sf() +
     coord_sf(xlim = c(20, 100), ylim = c(-40, 40), expand = FALSE, crs = st_crs(4326))+
