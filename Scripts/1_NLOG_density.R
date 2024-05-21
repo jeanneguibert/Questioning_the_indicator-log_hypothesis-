@@ -59,7 +59,7 @@ summary(df_NLOGdensity)
 write.csv(df_NLOGdensity, file=file.path(PATH_OUTPUT, "NLOG_density_tot_effort.csv"), row.names = F)
 
 ######Take a threshold (ndayobs_min) for the minimum number of days of observation to consider the cell ####################
-ndayobs_min<-6
+ndayobs_min<-NDAYS_OBS_MIN
 df_NLOGdensity<-subset(df_NLOGdensity,NumOBS>=ndayobs_min)
 
 ###Save file ###############################################################
