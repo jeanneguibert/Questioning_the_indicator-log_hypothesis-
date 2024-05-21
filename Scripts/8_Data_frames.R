@@ -20,6 +20,10 @@ df_list<-list(dfNLOG,dfChla,dfSST,dfSLA,dfFSLE,dfSSCI,dfMN)
 dftot<-Reduce(function(x, y) merge(x, y, by=c("lat_grid", "lon_grid","year", "month")), df_list)  
 summary(dftot)
 
+#filter to keep only years of interest
+dftot %>%
+  dplyr::filter(year %in% YEARS) -> dftot
+
 #ajout Zone
 dftot$Zone <- as.factor(ifelse(dftot$lat_grid<(-10),"Moz","Above_10S"))
 
