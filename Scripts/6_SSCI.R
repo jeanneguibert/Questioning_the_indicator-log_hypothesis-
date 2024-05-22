@@ -64,19 +64,19 @@ for (i in 1:length(SSCI_FILE)){
   
   #estimate mean for each year, month and 2° cell
   grid <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
-  for(iyear in unique(myyear)){
-    for (imonth in c(1:12)){
-      datesel<-myyear==iyear & mymonth==imonth
-      T_slice<-r[,,datesel]
-      grid$SSCI<-as.vector(T_slice)
-      df<-subset(grid,!is.na(SSCI))
-      df$lat_grid<-resolution*floor(df$lat/resolution) 
-      df$lon_grid<-resolution*floor(df$lon/resolution) 
-      df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,SSCImean=mean(SSCI),SSCIsd=sd(SSCI))#moyenne
-      df_mean$year<-iyear
-      df_mean$month<-imonth
-      df_meantot<-rbind(df_meantot,df_mean)
-    }
+  for (date in mydate){
+    iyear = lubridate::year(date)
+    imonth = lubridate::month(date)
+    datesel<-myyear==iyear & mymonth==imonth
+    T_slice<-r[,,datesel]
+    grid$SSCI<-as.vector(T_slice)
+    df<-subset(grid,!is.na(SSCI))
+    df$lat_grid<-resolution*floor(df$lat/resolution) 
+    df$lon_grid<-resolution*floor(df$lon/resolution) 
+    df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,SSCImean=mean(SSCI),SSCIsd=sd(SSCI))#moyenne
+    df_mean$year<-iyear
+    df_mean$month<-imonth
+    df_meantot<-rbind(df_meantot,df_mean)
   }
 }
 

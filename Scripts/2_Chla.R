@@ -61,19 +61,19 @@ for (i in 1:length(CHLA_FILE)){
     df_meantot<-data.frame(matrix(nrow=0,ncol=6))
     colnames(df_meantot)=c("lat_grid", "lon_grid","chlamean", "chlasd", "year", "month")
   }
-  for(iyear in unique(myyear)){
-    for (imonth in c(1:12)){
-      datesel<-myyear==iyear & mymonth==imonth
-      T_slice<-T_array[,,datesel]
-      grid$chla<-as.vector(T_slice)
-      df<-subset(grid,!is.na(chla))
-      df$lat_grid<-resolution*floor(df$lat/resolution) 
-      df$lon_grid<-resolution*floor(df$lon/resolution) 
-      df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,chlamean=mean(chla),chlasd=sd(chla))#moyenne
-      df_mean$year<-iyear
-      df_mean$month<-imonth
-      df_meantot<-rbind(df_meantot,df_mean)
-    }
+  for (date in mydate){
+    iyear = lubridate::year(date)
+    imonth = lubridate::month(date)
+    datesel<-myyear==iyear & mymonth==imonth
+    T_slice<-T_array[,,datesel]
+    grid$chla<-as.vector(T_slice)
+    df<-subset(grid,!is.na(chla))
+    df$lat_grid<-resolution*floor(df$lat/resolution) 
+    df$lon_grid<-resolution*floor(df$lon/resolution) 
+    df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,chlamean=mean(chla),chlasd=sd(chla))#moyenne
+    df_mean$year<-iyear
+    df_mean$month<-imonth
+    df_meantot<-rbind(df_meantot,df_mean)
   }
 }
 
