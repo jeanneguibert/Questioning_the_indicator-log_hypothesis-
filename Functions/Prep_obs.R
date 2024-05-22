@@ -43,20 +43,23 @@ prep.obs <- function (Ob7){
 
 fob.null <- function(Ob7){
   
+  Ob7$fob_type_when_arriving <- as.factor(Ob7$fob_type_when_arriving)
+  Ob7$fob_type_when_leaving <- as.factor(Ob7$fob_type_when_leaving)
+  
   ### 1. FOB type = NULL
   ###====================
     # Beaucoup de ligne du jeu de donnees contiennent un obj_conv == ""
     # Dans la majorite des cas, ce fob_type peut etre deduit des donnees 
     # fob_type_when_arriving et de l activite sur objet realisee
   
-    #On cree une colonne qui contient les infos d objet de fob_type_when_leaving
-    # qu on va completer avec celles de fob_type_when_arriving
-  Ob7<-cbind(Ob7, obj_conv=Ob7$fob_type_when_leaving)
+    #On cree une colonne qui contient les infos d objet de fob_type_when_arriving
+    # qu on va completer avec celles de fob_type_when_leaving
+  Ob7<-cbind(Ob7, obj_conv=Ob7$fob_type_when_arriving)
   
   data <- Ob7[Ob7$obj_conv == "",]
   data_rest <- Ob7[Ob7$obj_conv != "",]
   
-  if (length(levels(data$obj_conv)) != length(levels(Ob7$fob_type_when_arriving))){
+  if (length(levels(data$obj_conv)) != length(levels(Ob7$fob_type_when_leaving))){
     levels(data$obj_conv)<-levels(Ob7$fob_type_when_arriving)
   }
   #remet les niveau du facteur par ordre alphabetique
@@ -65,27 +68,27 @@ fob.null <- function(Ob7){
     ## 1.a. OPERATION OBJECT = 2
       # Pour les observations où le code de l'operation sur objet est egal a 2 (Visit)
       # on complete les donnees de obj_conv avec celles de
-      # fob_type_when_arriving
+      # fob_type_when_leaving
   
-  data[data$operation_on_object_code==2, "obj_conv"] <-
-    data[data$operation_on_object_code==2, "fob_type_when_arriving"]
+  data[data$operation_on_object_code==2, "obj_conv"]<-
+    data[data$operation_on_object_code==2, "fob_type_when_leaving"]
   
     ## 1.b. OPERATION OBJECT = 1
-    ## ATTENTION, VALABLE QUE DANS LE CAS PRECIS DE MON JEU DE DONNEES
     ##----------------------------------------------------------------
-      # Il y a une unique observation avec FOB type NULL et Operation objet = 1 (Deploiement)
-      # Le fob_comment contient 'Bambous et filets'. Il s'agit donc d'un DFAD
+      # Operation objet = 1 (Deploiement), dans ce cas on ajoute le FOB_type_when_leaving
  
-  data[data$operation_on_object_code==1, "obj_conv"]<-"DFAD"
+  data[data$operation_on_object_code==1, "obj_conv"]<-
+    data[data$operation_on_object_code==1, "fob_type_when_leaving"]
   
     ## 1.c. OPERATION OBJECT = 4 ou 7
       # L operation realisee est soit Removal, soit Sunk
       # Il n y a alors plus d objet en partant, mais il y a bien observation d un objet
-      
-    data[data$operation_on_object_code == 4, "obj_conv"] <-
-      data[data$operation_on_object_code == 4, "fob_type_when_arriving"]
-    data[data$operation_on_object_code == 7, "obj_conv"] <-
-      data[data$operation_on_object_code == 7, "fob_type_when_arriving"]
+      # Commentaire: ca n'est plus necessaire en prenant fob_type_when_arriving comme base
+  
+    # data[data$operation_on_object_code == 4, "obj_conv"] <-
+    #   data[data$operation_on_object_code == 4, "fob_type_when_arriving"]
+    # data[data$operation_on_object_code == 7, "obj_conv"] <-
+    #   data[data$operation_on_object_code == 7, "fob_type_when_arriving"]
   
     ## 1.d. NA RESTANTS
       # On utilise fob_comment pour completer la colonne obj_conv
