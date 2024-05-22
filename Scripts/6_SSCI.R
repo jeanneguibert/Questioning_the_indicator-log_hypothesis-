@@ -64,7 +64,8 @@ for (i in 1:length(SSCI_FILE)){
   
   #estimate mean for each year, month and 2° cell
   grid <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
-  for (date in mydate){
+  for (i in 1:length(mydate)){
+    date <- mydate[i]
     iyear = lubridate::year(date)
     imonth = lubridate::month(date)
     datesel<-myyear==iyear & mymonth==imonth

@@ -61,7 +61,8 @@ for (i in 1:length(CHLA_FILE)){
     df_meantot<-data.frame(matrix(nrow=0,ncol=6))
     colnames(df_meantot)=c("lat_grid", "lon_grid","chlamean", "chlasd", "year", "month")
   }
-  for (date in mydate){
+  for (i in 1:length(mydate)){
+    date <- mydate[i]
     iyear = lubridate::year(date)
     imonth = lubridate::month(date)
     datesel<-myyear==iyear & mymonth==imonth

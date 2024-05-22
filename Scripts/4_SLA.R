@@ -58,7 +58,8 @@ for (i in 1:length(SLA_FILE)){
     df_meantot<-data.frame(matrix(nrow=0,ncol=6))
     colnames(df_meantot)=c("lat_grid", "lon_grid","slamean", "slasd", "year", "month")
   }
-  for(date in mydate){
+  for (i in 1:length(mydate)){
+    date <- mydate[i]
     iyear = lubridate::year(date)
     imonth = lubridate::month(date)
     datesel<-(year(mydate)==iyear & month(mydate) ==imonth)
