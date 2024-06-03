@@ -11,12 +11,12 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, warning = F)
-library(tidyverse)
+library(dplyr)
 library(ggplot2)
 library(Hmisc)
 library(corrplot)
 library(gridExtra)
-library("PerformanceAnalytics")
+library(PerformanceAnalytics)
 library(stats)
 library(plyr)
 library("ggpubr")
@@ -32,14 +32,16 @@ PATH_FUNC <- file.path(WD, "Functions")
 PATH_DATA <- file.path(WD, "Data")
 PATH_FIG <- file.path(WD, "Figures_and_stats/Figures")
 source(file.path(PATH_FUNC, "Prep_obs.R"))
+source(file.path(PATH_FUNC, "stepAIC_gam.R"))
+source(file.path(PATH_FUNC, "plot_gam_predictions.R"))
 
-raw_obs <- read.csv(file.path(PATH_DATA, "all_operations_on_fobs_observe_fr_indian.csv"))
+raw_obs <- read.csv(file.path(PATH_DATA, "all_operations_on_fobs_observe_v9_fr_2005-2023.csv"))
 Ob7 <- prep.obs(Ob7 = raw_obs)
 
 Ob7 <- Ob7[Ob7$year>2013,]
-Ob7 <- Ob7[Ob7$year<2020,]
+Ob7 <- Ob7[Ob7$year<2023,]
 Ob7_NLOG = Ob7 %>% filter(obj_conv=="NLOG")
-Ob7_NLOG$Zone <- as.factor(ifelse(Ob7_NLOG$latitude<(-10),"Moz","Above_10S"))
+Ob7_NLOG$Zone <- as.factor(ifelse(Ob7_NLOG$latitude<(-10) & Ob7_NLOG$longitude <= 50,"MOZ","WIO"))
 world <- map_data("world")
 
 NLOG_VE <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE.csv"), header = TRUE)
@@ -92,29 +94,32 @@ If problems running the plots, think about "dev.off()"
 ```{r, echo = T, fig.show='hide'}
 fig1 <- ggplot(aes(x=c(35, 85), y=c(-25, 25)), data=Ob7_NLOG) + 
   geom_point(data = Ob7_NLOG, mapping = aes(x = longitude, y = latitude),  
-             colour = "blue", shape=1,size=1) + 
+             colour = "blue", shape=1,size=.5) +
+  geom_segment(aes(x=40,y=(-10),xend=50,yend=(-10)),linetype=2)+
+  geom_segment(aes(x=50,y=(-10),xend=50,yend=(-15)),linetype=2)+
   geom_map(data = world, map = world, aes(long, lat, map_id = region),  
            color =  "black", fill = "lightgray", size = 0.1) +
-  geom_segment(aes(x=40,y=(-10),xend=85,yend=(-10)),linetype=2)+
   xlim(min(35),max(85))+
-  ylim(min(-25),max(25))+
+  ylim(min(-25),max(20))+
   xlab("Longitude (deg)") +
   ylab("Latitude (deg)")+
   theme(panel.border = element_rect(fill = NA, colour = "black"))+
-  theme(text = element_text(size = 15))+
-  theme(axis.text.x = element_text(size = 15))+
-  theme(axis.text.y = element_text(size = 15))+
-  annotate(geom="text", x=81, y=-7, label="\U2265 10°S",
-              color="black", fontface="bold", size=4)+ #\U2265 is the code for the >= symbol 
-  annotate(geom="text", x=81, y=-13, label="< 10°S",
-              color="black", fontface="bold", size=4)
+  theme(text = element_text(size = 10))+
+  theme(axis.text.x = element_text(size = 10))+
+  theme(axis.text.y = element_text(size = 10))+
+  annotate(geom="label", x=55, y=-5, label="WIO",
+              color="black", fontface="bold", size=3)+
+  geom_segment(aes(x=54,y=(-15),xend=45,yend=(-13)),
+               linetype=1, linewidth = .25)+
+  annotate(geom="label", x=55, y=-15, label="MOZ",
+              color="black", fontface="bold", size=3)
 ```
 
 ## Save plot
 
 ```{r}
-ggsave(file=file.path(PATH_FIG, "Fig1_Study Area.png"), fig1,width = 10, height = 10, units = "cm")
-ggsave(file=file.path(PATH_FIG, "Fig1.eps"), fig1,width = 10, height = 10, units = "cm")
+ggsave(file=file.path(PATH_FIG, "Fig1_Study Area.png"), fig1,width = 10, height = 9, units = "cm")
+ggsave(file=file.path(PATH_FIG, "Fig1.eps"), fig1,width = 10, height = 9, units = "cm")
 ```
 
 # Figure 2 : Yearly number of NLOG observations (histograms)
@@ -124,10 +129,9 @@ fig2 <- ggplot(data = Ob7_NLOG) +
   geom_bar(mapping = aes(x = year, fill=as.factor(Zone)), binwidth=0.5, color = "black", position = position_dodge2(width = 1, preserve = "single", padding = 0))+ 
   stat_count(aes(x = year, y=..count.., fill=as.factor(Zone), label=..count..),size = 6, geom="text", vjust=-0.5, position = position_dodge2(width = 0.9, preserve = "single", padding = 0))+
   ylab("Number of observations")+
-  scale_x_continuous(name="Years", breaks=c(2014,2015,2016,2017,2018,2019),  
-                     labels = c("2014","2015","2016","2017","2018","2019"))+
-  scale_fill_manual(values = c("grey48","grey86"), name = "Zone",  
-                    labels = c ("\U2265 10°S","< 10°S"))+
+  scale_x_continuous(name="Years", breaks=2014:2022,  
+                     labels = 2014:2022)+
+  scale_fill_manual(values = c("grey48","grey86"), name = "Zone")+
   theme(panel.border = element_rect(fill = NA, colour = "black"))+
   theme(text = element_text(size = 25))+
   theme(axis.text.x = element_text(size = 25))+
@@ -140,7 +144,7 @@ fig2 <- ggplot(data = Ob7_NLOG) +
 
 ```{r}
 ggsave(file=file.path(PATH_FIG, "Fig2_Nb of NLOGs.png"), fig2,width = 30, height = 18, units = "cm")
-ggsave(file=file.path(PATH_FIG, "Fig2.eps"), fig2,width = 30, height = 18, units = "cm")
+ggsave(file=file.path(PATH_FIG, "Fig2.eps"), fig2, width = 30, height = 18, units = "cm")
 ```
 
 # Figure 3 : Distribution of the environmental variables according to NLOG = 0 or NLOG > 0
@@ -163,14 +167,15 @@ f3.ssci.moz <- ggplot()+
   scale_y_continuous(labels = function(x) x*100*b.width)+
   xlab("Mean SSCI (m.s-1)")+
   ylab("Frequency (%)")+
-  ggtitle("< 10°S")+
+  ggtitle("MOZ")+
   theme(text = element_text(size = 20))+
   theme(plot.title = element_text(hjust = 0.5))+
   theme(axis.text.x = element_text(size = 20))+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0.445, y=8.75, label="P = 0.099",
+  annotate(geom="text", x=0.445, y=8.75, label="P = 0.588",
+  # annotate(geom="text", x=0.445, y=8.75, label="P = 0.099",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -192,14 +197,16 @@ f3.ssci.north <- ggplot()+
   scale_y_continuous(labels = function(x) x*100*b.width)+
   xlab("Mean SSCI (m.s-1)")+
   ylab(" ")+
-  ggtitle("\U2265 10°S")+ #\U2265 is the code for the >= symbol
+  # ggtitle("\U2265 10°S")+ #\U2265 is the code for the >= symbol
+  ggtitle("WIO")+ #\U2265 is the code for the >= symbol
   theme(text = element_text(size = 20))+
   theme(plot.title = element_text(hjust = 0.5))+
   theme(axis.text.x = element_text(size = 20))+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0.62, y=4.3, label="P = 0.013",
+  annotate(geom="text", x=0.62, y=4.3, label="P = 0.012",
+  # annotate(geom="text", x=0.62, y=4.3, label="P = 0.013",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -227,7 +234,7 @@ f3.sla.moz <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0.14, y=13, label="P = 0.345",
+  annotate(geom="text", x=0.14, y=13, label="P = 0.019",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -255,7 +262,8 @@ f3.sla.north <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0.28, y=5, label="P = 0.292",
+  # annotate(geom="text", x=0.28, y=5, label="P = 0.292",
+  annotate(geom="text", x=0.28, y=5, label="P = 0.844",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -283,7 +291,8 @@ f3.fsle.moz <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=-0.037, y=15, label="P = 0.114",
+  # annotate(geom="text", x=-0.037, y=15, label="P = 0.114",
+  annotate(geom="text", x=-0.037, y=15, label="P = 0.857",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -311,7 +320,8 @@ f3.fsle.north <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0, y=21, label="P = 0.291",
+  # annotate(geom="text", x=0, y=21, label="P = 0.291",
+  annotate(geom="text", x=0, y=21, label="P = 0.155",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -331,7 +341,7 @@ f3.mn.moz <- ggplot()+
                     values = c("NLOG = 0" = "steelblue3", "NLOG > 0" = "yellow1"))+
   scale_x_continuous(breaks=c(0.25,0.50,0.75,1.00,1.25))+
   scale_y_continuous(labels = function(x) x*100*b.width)+
-  xlab("Mean MN_Epi (g.m-2)")+
+  xlab("Mean MN (g.m-2)")+
   ylab("Frequency (%)")+
   ggtitle(" ")+
   theme(text = element_text(size = 20))+
@@ -339,7 +349,8 @@ f3.mn.moz <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=1.2, y=4.5, label="P = 0.669",
+  # annotate(geom="text", x=1.2, y=4.5, label="P = 0.669",
+  annotate(geom="text", x=1.2, y=4.5, label="P = 0.364",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -359,7 +370,7 @@ f3.mn.north <- ggplot()+
                     values = c("NLOG = 0" = "steelblue3", "NLOG > 0" = "yellow1"))+
   scale_x_continuous(breaks=c(0.3,0.6,0.9))+
   scale_y_continuous(labels = function(x) x*100*b.width)+
-  xlab("Mean MN_Epi (g.m-2)")+
+  xlab("Mean MN (g.m-2)")+
   ylab(" ")+
   ggtitle(" ")+
   theme(text = element_text(size = 20))+
@@ -367,7 +378,8 @@ f3.mn.north <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=1.04, y=2.8, label="P = 0.160",
+  # annotate(geom="text", x=1.04, y=2.8, label="P = 0.160",
+  annotate(geom="text", x=1.04, y=2.8, label="P = 0.153",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -396,7 +408,8 @@ f3.chla.moz <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0.93, y=9.1, label="P = 0.441",
+  # annotate(geom="text", x=0.93, y=9.1, label="P = 0.441",
+  annotate(geom="text", x=0.93, y=9.1, label="P = 0.422",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -424,7 +437,8 @@ f3.chla.north <- ggplot()+
   theme(axis.text.y = element_text(size = 20))+
   theme(legend.text = element_text(size=20))+
   theme(legend.title = element_text(size=20))+
-  annotate(geom="text", x=0.69, y=6.5, label="P = 0.012",
+  # annotate(geom="text", x=0.69, y=6.5, label="P = 0.012",
+  annotate(geom="text", x=0.69, y=6.5, label="P = 0.020",
               color="black", fontface="bold.italic", size=6)
 ```
 
@@ -462,12 +476,11 @@ ggsave(file=file.path(PATH_FIG, "Fig3.eps"), fig3,width = 35, height = 50, units
 #SSCI
 f4.ssci <- ggplot(NLOG_VE_sup_zero)+
   geom_point(aes(x = SSCImean, y = NLOG_stand, shape = Zone),size = 3)+
-  scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
+  # scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
+  scale_shape_manual(values = c(17, 1))+
   scale_x_continuous(breaks=c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7))+
   xlab("Mean SSCI (m.s-1)")+
-  ylab("NLOG abundance index 
-       (Number per 
-       observation effort)")+
+  ylab(expression(A["i,m"]))+
   scale_y_continuous(breaks=c(0,0.5,1,1.5,2,2.5))+
   theme(text = element_text(size = 17))+
   theme(axis.text.x = element_text(size = 18))+
@@ -484,12 +497,11 @@ f4.ssci <- ggplot(NLOG_VE_sup_zero)+
 #SLA
 f4.sla <- ggplot(NLOG_VE_sup_zero)+
   geom_point(aes(x = slamean, y = NLOG_stand, shape = Zone),size = 3)+
-  scale_shape_manual(values = c(1, 17),label = c(">10°S","<10°S"))+
+  # scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
+  scale_shape_manual(values = c(17, 1))+
   scale_x_continuous(breaks=c(-0.10,-0.05,0,0.05,0.10,0.15,0.20,0.25,0.30))+
   xlab("Mean SLA (m)")+
-  ylab(" 
-        
-       ")+
+  ylab(" ")+
   scale_y_continuous(breaks=c(0,0.5,1,1.5,2,2.5))+
   theme(text = element_text(size = 17))+
   theme(axis.text.x = element_text(size = 16))+
@@ -506,12 +518,11 @@ f4.sla <- ggplot(NLOG_VE_sup_zero)+
 #FSLE
 f4.fsle <- ggplot(NLOG_VE_sup_zero)+
   geom_point(aes(x = FSLEmean, y = NLOG_stand, shape = Zone),size = 3)+
-  scale_shape_manual(values = c(1, 17),label = c(">10°S","<10°S"))+
+  # scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
+  scale_shape_manual(values = c(17, 1))+
   scale_x_continuous(breaks=c(-0.14,-0.12,-0.10,-0.08,-0.06,-0.04,-0.02,0))+
   xlab("Mean FSLE (days-1)")+
-  ylab(" 
-        
-       ")+
+  ylab(expression(A["i,m"]))+
   scale_y_continuous(breaks=c(0,0.5,1,1.5,2,2.5))+
   theme(text = element_text(size = 17))+
   theme(axis.text.x = element_text(size = 18))+
@@ -528,12 +539,11 @@ f4.fsle <- ggplot(NLOG_VE_sup_zero)+
 #MN_Epi
 f4.mn <- ggplot(NLOG_VE_sup_zero)+
   geom_point(aes(x = MNmean, y = NLOG_stand, shape = Zone),size = 3)+
-  scale_shape_manual(values = c(1, 17),label = c(">10°S","<10°S"))+
+  # scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
+  scale_shape_manual(values = c(17, 1))+
   scale_x_continuous(breaks=c(0.25,0.50,0.75,1,1.25))+
-  xlab("Mean MN_Epi (g.m-2)")+
-  ylab("NLOG abundance index 
-       (Number per 
-       observation effort)")+
+  xlab("Mean MN (g.m-2)")+
+  ylab(" ")+
   scale_y_continuous(breaks=c(0,0.5,1,1.5,2,2.5))+
   theme(text = element_text(size = 17))+
   theme(axis.text.x = element_text(size = 18))+
@@ -549,12 +559,11 @@ f4.mn <- ggplot(NLOG_VE_sup_zero)+
 #Chla
 f4.chla <- ggplot(NLOG_VE_sup_zero)+
   geom_point(aes(x = chlamean, y = NLOG_stand, shape = Zone),size = 3)+
-  scale_shape_manual(values = c(1, 17),label = c(">10°S","<10°S"))+
+  # scale_shape_manual(values = c(1, 17),label = c("\U2265 10°S","< 10°S"))+
+  scale_shape_manual(values = c(17, 1))+
   scale_x_continuous(breaks=c(0,0.10,0.20,0.30,0.40,0.50,0.60,0.70,0.80,0.90,1))+
   xlab("Mean Chl-a (mg.m-3)")+
-  ylab("NLOG abundance index 
-       (Number per 
-       observation effort)")+
+  ylab(expression(A["i,m"]))+
   scale_y_continuous(breaks=c(0,0.5,1,1.5,2,2.5))+
   theme(text = element_text(size = 17))+
   theme(axis.text.x = element_text(size = 18))+
@@ -590,14 +599,38 @@ ggsave(file=file.path(PATH_FIG, "Fig4.eps"), fig4, width = 30, height = 25, unit
 
 ```
 
-# Figure 5 : Diagnostic plots of models
+# Figure 5 : Predictions of GAM
 
 ```{r}
-plot(LM4_North_chla)
-plot(LM4_North_chla, which=c(1,2))
+GAM_North <- mgcv::gam(logNLOG ~ s(chlacr) + s(slacr) + s(SSCIcr) + s(FSLEcr) + s(MNcr),
+                       data = NLOG_VE_sup_zero_North)
+GAM_North2 <- stepAIC.gam(GAM_North)
 
-plot(LM5_Moz_chla)
-plot(LM5_Moz_chla, which=c(1,2))
+p1 <- plot.gam.prediction(data = NLOG_VE_sup_zero_North,
+                    my_gam = GAM_North2,
+                    vars = c("chlacr","slacr","SSCIcr","FSLEcr"),
+                    var_to_predict = "chlacr",
+                    xlabel = "Chl-a",
+                    ylabel = expression("Predicted"~A[im]),
+                    lims.y = c(0,NA),
+                    trans.back = exp)
+p2 <- plot.gam.prediction(data = NLOG_VE_sup_zero_North,
+                    my_gam = GAM_North2,
+                    vars = c("chlacr","slacr","SSCIcr","FSLEcr"),
+                    var_to_predict = "slacr",
+                    xlabel = "SLA",
+                    ylabel = expression("Predicted"~A[im]),
+                    lims.y = c(0,NA),
+                    trans.back = exp)
+fig5 <- ggarrange(p1,
+                  p2,
+                  labels = c("(a)","(b)"),
+                  font.label = list(size = 12),
+                  label.x = 0,
+                  label.y = 0.95,
+          ncol = 1, nrow = 2)
+ggsave(file=file.path(PATH_FIG, "Fig5_gam_predict.png"), fig5, width = 8, height = 15, units = "cm")
+ggsave(file=file.path(PATH_FIG, "Fig5.eps"), fig5, width = 8, height = 15, units = "cm")
 ```
 
 
@@ -609,12 +642,13 @@ plot(LM5_Moz_chla, which=c(1,2))
 ```{r}
 #Before
 f.bef <- ggplot()+
-  geom_histogram(data = NLOG_VE_sup_zero, aes(x = NLOG_stand), binwidth = 0.1)+
+  geom_histogram(data = NLOG_VE_sup_zero, aes(x = NLOG_stand),
+                 binwidth = 0.1)+
   scale_x_continuous(breaks=c(0,0.5,1,1.5,2,2.5,3))+
   scale_y_continuous(breaks=c(0,25,50,75,100,125,150))+
   xlab("NLOG abundance index
   (Number per observation effort)")+
-  ylab("Frequency (%)")+
+  ylab("Number of observations")+
   theme(text = element_text(size = 20))+
   theme(axis.text.x = element_text(size = 20))+
   theme(axis.text.y = element_text(size = 20))
@@ -630,7 +664,7 @@ f.aft <- ggplot()+
   scale_y_continuous(breaks=c(0,5,10,15,20,25,30,35,40,45,50))+
   xlab("NLOG abundance index
   (Number per observation effort)")+
-  ylab("Frequency (%)")+
+  ylab("Number of observations")+
   theme(text = element_text(size = 20))+
   theme(axis.text.x = element_text(size = 20))+
   theme(axis.text.y = element_text(size = 20))
@@ -659,12 +693,12 @@ ggsave(file=file.path(PATH_FIG, "Appendix_A1_Aim distribution.eps"), ApxA1,width
 # Appendix A2 : correlation matrix of micronekton types
 
 ```{r}
-my_list <- list(dfMN_epi,dfMN_u,dfMN_mu,dfMN_ml,dfMN_hml)
-df <- Reduce(function(x, y) merge(x, y, by=c("lat_grid", "lon_grid", "year", "month")), my_list)  
-names(df)
-my_data_mn <- df %>% dplyr::select(micronec_epi, micronec_umeso, micronec_mumeso, micronec_mlmeso, micronec_hmlmeso)
-colnames(my_data_mn) <- c("MN_Epi","MN_Um","MN_Mum","MN_Mlm","MN_Hmlm")
-chart.Correlation(my_data_mn, histogram=TRUE, pch=20, method = "kendall")
+# my_list <- list(dfMN_epi,dfMN_u,dfMN_mu,dfMN_ml,dfMN_hml)
+# df <- Reduce(function(x, y) merge(x, y, by=c("lat_grid", "lon_grid", "year", "month")), my_list)  
+# names(df)
+# my_data_mn <- df %>% dplyr::select(micronec_epi, micronec_umeso, micronec_mumeso, micronec_mlmeso, micronec_hmlmeso)
+# colnames(my_data_mn) <- c("MN_Epi","MN_Um","MN_Mum","MN_Mlm","MN_Hmlm")
+# chart.Correlation(my_data_mn, histogram=TRUE, pch=20, method = "kendall")
 ```
 
 # Appendix A3 : correlation matrix of Environmental variables (VE)
@@ -672,12 +706,15 @@ chart.Correlation(my_data_mn, histogram=TRUE, pch=20, method = "kendall")
 ```{r}
 names(NLOG_VE)
 my_data_ve <- NLOG_VE %>% dplyr::select(sstmean, SSCImean, slamean, FSLEmean, MNmean, chlamean)
-colnames(my_data_ve) <- c("SST","SSCI","SLA","FSLE", "MN_Epi","Chl-a")
+colnames(my_data_ve) <- c("SST","SSCI","SLA","FSLE", "MN","Chl-a")
+png(filename = file.path(PATH_FIG, "Appendix_A1_corrMatrixEnv.png"),
+    width = 20, height = 12, units = "cm", res = 300)
 chart.Correlation(my_data_ve, histogram=TRUE, pch=20, method = "kendall")
+dev.off()
 ```
 
 # Appendix A4 : Predicted vs Observed Aim values
-## North
+## WIO
 
 ```{r}
 #North
@@ -743,15 +780,15 @@ ggsave(file=file.path(PATH_FIG, "Appendix_A4_pred vs obs.eps"), ApxA4,width = 35
 B1.ssci.moz <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=SSCImean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=SSCImean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="MOZ",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean SSCI (m.s-1)")+
   ylab("Frequency (%)")+
-  ggtitle("< 10°S")+
+  ggtitle("MOZ")+
     theme(text = element_text(size = 20))+
   theme(plot.title = element_text(hjust = 0.5))+
   theme(text = element_text(size = 20))+
@@ -770,15 +807,16 @@ B1.ssci.moz <- ggplot()+
 B1.ssci.north <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=SSCImean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=SSCImean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="WIO",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean SSCI (m.s-1)")+
   ylab("Frequency (%)")+
-  ggtitle("\U2265 10°S")+ #\U2265 is the code for the >= symbol
+  # ggtitle("\U2265 10°S")+ #\U2265 is the code for the >= symbol
+  ggtitle("WIO")+ #\U2265 is the code for the >= symbol
   theme(text = element_text(size = 20))+
   theme(plot.title = element_text(hjust = 0.5))+
   theme(axis.text.x = element_text(size = 20))+
@@ -796,10 +834,10 @@ B1.ssci.north <- ggplot()+
 B1.sla.moz <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=slamean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=slamean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="MOZ",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean SLA (m)")+
@@ -821,10 +859,10 @@ B1.sla.moz <- ggplot()+
 B1.sla.north <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=slamean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=slamean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="WIO",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean SLA (m)")+
@@ -846,10 +884,10 @@ B1.sla.north <- ggplot()+
 B1.fsle.moz <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=FSLEmean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=FSLEmean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="MOZ",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean FSLE (days-1)")+
@@ -871,10 +909,10 @@ B1.fsle.moz <- ggplot()+
 B1.fsle.north <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=FSLEmean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=FSLEmean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="WIO",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean FSLE (days-1)")+
@@ -888,7 +926,7 @@ B1.fsle.north <- ggplot()+
   theme(plot.margin = grid::unit(c(0,0.75,0,0), "cm"))
 ```
 
-## MN_Epi - Moz
+## MN - Moz
 
 ```{r}
 ## MN_Epi
@@ -896,13 +934,13 @@ B1.fsle.north <- ggplot()+
 B1.mn.moz <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=micronec_epi, y = ..density.., fill = "Data used"),
                  binwidth = 0.04, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=micronec_epi, y = ..density.., fill = "Random data"),
                  binwidth = 0.04, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="MOZ",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
-  xlab("Mean MN_Epi (g.m-2)")+
+  xlab("Mean MN (g.m-2)")+
   ylab("Frequency (%)")+
   ggtitle(" ")+
   theme(text = element_text(size = 20))+
@@ -913,7 +951,7 @@ B1.mn.moz <- ggplot()+
   theme(plot.margin = grid::unit(c(0,0.75,0,0), "cm"))
 ```
 
-## MN_Epi - North 
+## MN - North 
 
 ```{r}
 ## MN_Epi
@@ -921,13 +959,13 @@ B1.mn.moz <- ggplot()+
 B1.mn.north <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=micronec_epi, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=micronec_epi, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="WIO",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
-  xlab("Mean MN_Epi (g.m-2)")+
+  xlab("Mean MN (g.m-2)")+
   ylab("Frequency (%)")+
   ggtitle(" ")+
   theme(text = element_text(size = 20))+
@@ -947,10 +985,10 @@ B1.mn.north <- ggplot()+
 B1.chla.moz <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=chlamean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=chlamean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Moz",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="MOZ",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean Chl-a (mg.m-3)")+
@@ -973,10 +1011,10 @@ B1.chla.moz <- ggplot()+
 B1.chla.north <- ggplot()+
   geom_histogram(stat = 'bin', aes(x=chlamean, y = ..density.., fill = "Data used"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",], alpha=0.5)+
   geom_histogram(stat = 'bin', aes(x=chlamean, y = ..density.., fill = "Random data"),
                  binwidth = 0.02, bins = 30, size = 1,
-                 data = df_eff_new[df_eff_new$Zone=="Above_10S",], alpha=0.5)+
+                 data = df_eff_new[df_eff_new$Zone=="WIO",], alpha=0.5)+
   scale_fill_manual(name = "Data used vs Random data",
                     values = c("Random data" = "yellow1", "Data used" = "steelblue"))+
   xlab("Mean Chl-a (mg.m-3)")+
