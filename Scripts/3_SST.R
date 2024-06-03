@@ -31,12 +31,11 @@ for (i in 1:length(SST_FILE)){
   t_month <- as.integer(unlist(t_dstr)[2])
   t_day <- as.integer(unlist(t_dstr)[3])
   t_year <- as.integer(unlist(t_dstr)[1])
+  date_origin <- as.Date(paste(t_year,t_month,t_day, sep="-"))
+  time_unit <- unlist(t_ustr)[1]
+  if (time_unit == "seconds"){time_unit <- "secs"}
   
-  chron(round(time/24),origin=c(t_month, t_day, t_year),format = "m/d/y")
-  mydate<-chron(round(time/24),origin=c(t_month, t_day, t_year))
-  
-  library("lubridate")
-  mydate<-as.Date(mydate,'%m/%d/%Y')
+  mydate <- date_origin + as.difftime(time, units = time_unit)
   myyear<-year(mydate)
   mymonth<-month(mydate)
   myday<-day(mydate)

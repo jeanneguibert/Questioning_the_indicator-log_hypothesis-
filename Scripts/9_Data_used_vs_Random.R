@@ -12,7 +12,7 @@ dfSSCI<-read.csv(file.path(PATH_OUTPUT, "SSCI_mean.csv"), header = T)
 dfMN_epi<-read.csv(file.path(PATH_OUTPUT, "MN_epi_mean.csv"), header = T)
 
 NLOG_VE_tot_effort <- read.csv(file.path(PATH_OUTPUT,"NLOG_density_tot_effort.csv"), header = T)
-NLOG_VE_tot_effort$threshold <- as.factor(ifelse(NLOG_VE_tot_effort$NumOBS<6,"Random","Fisheries"))
+NLOG_VE_tot_effort$threshold <- as.factor(ifelse(NLOG_VE_tot_effort$NumOBS<NDAYS_OBS_MIN,"Random","Fisheries"))
 # table(NLOG_VE_tot_effort$threshold)
 
 #### Coordinates study area ####
@@ -28,22 +28,22 @@ summary(df)
 
 #keep only lat lon of interest = study area
 df$id <- paste(df$lat_grid,"_",df$lon_grid)
-df <- subset(df,df$id%in%NLOG_VE_coord$id)
+df <- subset(df,df$id %in% NLOG_VE_coord$id)
 
 #effort
-df_eff <- merge(df,NLOG_VE_VF, by = c("lat_grid","lon_grid","year","month","id"),all = T)
+df_eff <- merge(df, NLOG_VE_VF, by = c("lat_grid","lon_grid","year","month","id"),all = T)
 df_eff$NumOBS <- ifelse(is.na(df_eff$NumOBS),0,df_eff$NumOBS)
-df_eff$threshold <- as.factor(ifelse(df_eff$NumOBS<6,"Random","Fisheries"))
+df_eff$threshold <- as.factor(ifelse(df_eff$NumOBS<NDAYS_OBS_MIN,"Random","Fisheries"))
 
 #### Creation of zones ####
-df_eff$Zone <- as.factor(ifelse(df_eff$lat_grid<(-10),"Moz","Above_10S"))
+df_eff$Zone <- as.factor(ifelse(df_eff$lat_grid<(-10) & df_eff$lon_grid<=(50),"MOZ","WIO"))
 
 #### Random sampling ####
 for (sample_size in c(50,100,150)){
   
   df_eff_new <- data.frame(matrix(nrow=0,ncol = 20))
   colnames(df_eff_new) <- colnames(df_eff)
-  for (iyear in c(2014:2019)){
+  for (iyear in YEARS){
     for (imonth in c(1:12)){
       df_random <- subset(df_eff,df_eff$threshold=="Random" & df_eff$month == imonth & 
                             df_eff$year == iyear)
