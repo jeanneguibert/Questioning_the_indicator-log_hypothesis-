@@ -1,12 +1,13 @@
 ---
 title: "Statistical analyses_Github"
-author: "J. Guibert"
-date: "20/11/2022"
+author: "J. Guibert & A. Dupaix"
+date: "20/11/2022 - update 23/05/2024"
 output: pdf_document
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, warning = F) 
 library(MASS)
+library(mgcv)
 ```
 
 # Required data sets
@@ -14,6 +15,8 @@ library(MASS)
 ```{r data frame}
 WD <- ".."
 PATH_OUTPUT <- file.path(WD, "Outputs")
+PATH_FUNC <- file.path(WD, "Functions")
+source(file.path(PATH_FUNC, "stepAIC_gam.R"))
 
 NLOG_VE <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE.csv"), head = T)
 NLOG_VE_sup_zero <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE_sup_zero.csv"), head = T)
@@ -176,6 +179,8 @@ cor.test(NLOG_VE_sup_zero_North$NLOG_stand, NLOG_VE_sup_zero_North$FSLEmean, met
 
 cor.test(NLOG_VE_sup_zero_Moz$NLOG_stand, NLOG_VE_sup_zero_Moz$MNmean, method = "kendall")
 cor.test(NLOG_VE_sup_zero_North$NLOG_stand, NLOG_VE_sup_zero_North$MNmean, method = "kendall")
+
+wilcox.test(NLOG_VE_sup_zero_Moz$NLOG_stand, NLOG_VE_sup_zero_North$NLOG_stand)
 ```
 
 Related to Table A5 (Sensitivity Analysis)
@@ -217,41 +222,28 @@ NLOG_VE_sup_zero_Moz$MNcr <- scale(NLOG_VE_sup_zero_Moz$MNmean)
 NLOG_VE_sup_zero_Moz$logNLOG <- log(NLOG_VE_sup_zero_Moz$NLOG_stand)
 ```
 
-## Linear model for the >10°S zone (North)
+## GAM for the WIO zone
 
 ```{r LM North}
-LM_North_chla <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_North)
-summary(LM_North_chla)
-stepAIC(LM_North_chla)
+GAM_North <- mgcv::gam(logNLOG ~ s(chlacr) + s(slacr) + s(SSCIcr) + s(FSLEcr) + s(MNcr),
+                       data = NLOG_VE_sup_zero_North)
+summary(GAM_North)
 
-LM2_North_chla <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr, data = NLOG_VE_sup_zero_North)
-summary(LM2_North_chla)
+GAM_North2 <- stepAIC.gam(GAM_North)
+summary(GAM_North2)
 
-LM3_North_chla <- lm(logNLOG ~ chlacr + slacr + SSCIcr, data = NLOG_VE_sup_zero_North)
-summary(LM3_North_chla)
+par(mfrow = c(2,2))
+gam.check(GAM_North2)
 
-LM4_North_chla <- lm(logNLOG ~ chlacr + slacr, data = NLOG_VE_sup_zero_North)
-summary(LM4_North_chla)
+plot(GAM_North2,residuals=T,pages=1)
 ```
 
-## Linear model for the <10°S zone (Moz)
+## Linear model for the MOZ zone
 
 ```{r LM Moz}
-LM_Moz_chla <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_Moz)
-summary(LM_Moz_chla)
-stepAIC(LM_Moz_chla)
-
-LM2_Moz_chla <- lm(logNLOG ~ chlacr + slacr + SSCIcr + MNcr, data = NLOG_VE_sup_zero_Moz)
-summary(LM2_Moz_chla)
-
-LM3_Moz_chla <- lm(logNLOG ~ slacr + SSCIcr + MNcr, data = NLOG_VE_sup_zero_Moz)
-summary(LM3_Moz_chla)
-
-LM4_Moz_chla <- lm(logNLOG ~ slacr + SSCIcr, data = NLOG_VE_sup_zero_Moz)
-summary(LM4_Moz_chla)
-
-LM5_Moz_chla <- lm(logNLOG ~ slacr, data = NLOG_VE_sup_zero_Moz)
-summary(LM5_Moz_chla)
+LM_Moz <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_Moz)
+LM_Moz2 <- stepAIC(LM_Moz)
+summary(LM_Moz2)
 ```
 
 Related to Table A6 (Sensitivity analysis)
@@ -264,20 +256,12 @@ NLOG_VE_sup_zero_North_10$FSLEcr <- scale(NLOG_VE_sup_zero_North_10$FSLEmean)
 NLOG_VE_sup_zero_North_10$MNcr <- scale(NLOG_VE_sup_zero_North_10$MNmean)
 NLOG_VE_sup_zero_North_10$logNLOG <- log(NLOG_VE_sup_zero_North_10$NLOG_stand)
 
-LM_North_chla_10 <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_North_10)
-summary(LM_North_chla_10)
+GAM_North_10 <- mgcv::gam(logNLOG ~ s(chlacr) + s(slacr) + s(SSCIcr) + s(FSLEcr) + s(MNcr),
+                          data = NLOG_VE_sup_zero_North_10)
+summary(GAM_North_10)
 
-LM2_North_chla_10 <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr, data = NLOG_VE_sup_zero_North_10)
-summary(LM2_North_chla_10)
-
-LM3_North_chla_10 <- lm(logNLOG ~ chlacr + slacr + FSLEcr, data = NLOG_VE_sup_zero_North_10)
-summary(LM3_North_chla_10)
-
-LM4_North_chla_10 <- lm(logNLOG ~ chlacr + slacr, data = NLOG_VE_sup_zero_North_10)
-summary(LM4_North_chla_10)
-
-LM5_North_chla_10 <- lm(logNLOG ~ slacr, data = NLOG_VE_sup_zero_North_10)
-summary(LM5_North_chla_10)
+GAM_North2_10 <- stepAIC.gam(GAM_North_10)
+summary(GAM_North2_10)
 ```
 
 ```{r LM Moz with T equal 10}
@@ -343,7 +327,7 @@ wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$mi
 median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$chlamean)
 median(df_eff_new[df_eff_new$Zone=="Moz",]$chlamean)
 
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$chlamean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$chlamean, na.rm = T)
 median(df_eff_new[df_eff_new$Zone=="Above_10S",]$chlamean)
 
 ##SLA
