@@ -1,7 +1,7 @@
 ##################### Main script to test the indicator-log hypothesis ###################
 
 #create output directory
-dir.create(PATH_OUTPUT)
+dir.create(PATH_OUTPUT, showWarnings = F)
 
 if(READ_DATA){
   cat("Reading raw datasets\n==================\n\n")
