@@ -1,3 +1,5 @@
+library(cowplot)
+
 plot.gam.prediction <- function(data, my_gam,
                                 vars, var_to_predict,
                                 xlabel = "Xi",
@@ -25,6 +27,9 @@ plot.gam.prediction <- function(data, my_gam,
   }
   upr <- p$fit + (p$se.fit)
   lwr <- p$fit - (p$se.fit)
+  if (all(lwr<0)){
+    lwr <- rep(0, length(lwr))
+  }
   
   g <-
     ggplot()+
@@ -39,7 +44,8 @@ plot.gam.prediction <- function(data, my_gam,
     scale_y_continuous(limits = lims.y)+
     xlab(xlabel)+ ylab(ylabel)+
     theme(panel.background = element_rect(fill = "white",
-                                          color = "black"))  
+                                          color = "black"))
+
   
   xhist <- 
     axis_canvas(g, axis = "x") + 
