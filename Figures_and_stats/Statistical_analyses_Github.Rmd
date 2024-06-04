@@ -1,14 +1,17 @@
 ---
-title: "Statistical analyses_Github"
+title: "Statistical analyses"
 author: "J. Guibert & A. Dupaix"
 date: "20/11/2022 - update 23/05/2024"
 output: pdf_document
+toc: true
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = T, warning = F) 
 library(MASS)
 library(mgcv)
 ```
+
+\newpage
 
 # Required data sets
 
@@ -39,7 +42,7 @@ df_eff_new <- read.csv(file.path(PATH_OUTPUT, "df_eff_new_100.csv"), head = T)
 df_eff_new_50 <- read.csv(file.path(PATH_OUTPUT, "df_eff_new_50.csv"), head = T)
 df_eff_new_150 <- read.csv(file.path(PATH_OUTPUT, "df_eff_new_150.csv"), head = T)
 
-# For the Sensitivity analysis (Oi,d > 10)
+# For the Sensitivity analysis (T = 10)
 
 NLOG_VE_zero_Moz_10 <- NLOG_VE_zero_Moz[NLOG_VE_zero_Moz$NumOBS>=10,]
 NLOG_VE_zero_North_10 <- NLOG_VE_zero_North[NLOG_VE_zero_North$NumOBS>=10,]
@@ -47,59 +50,9 @@ NLOG_VE_sup_zero_Moz_10 <- NLOG_VE_sup_zero_Moz[NLOG_VE_sup_zero_Moz$NumOBS>=10,
 NLOG_VE_sup_zero_North_10 <- NLOG_VE_sup_zero_North[NLOG_VE_sup_zero_North$NumOBS>=10,]
 ```
 
-# I : Differences between zones (Wilcoxon tests)
+# I : Correlations between environmental variables (Kendall tests)
 
-Here, no plots have been made but boxplots could be a good representation
-
-```{r comparison of means test between regions}
-wilcox.test(NLOG_VE_sup_zero_Moz$chlamean, NLOG_VE_sup_zero_North$chlamean)
-wilcox.test(NLOG_VE_sup_zero_Moz$slamean, NLOG_VE_sup_zero_North$slamean)
-wilcox.test(NLOG_VE_sup_zero_Moz$SSCImean, NLOG_VE_sup_zero_North$SSCImean)
-wilcox.test(NLOG_VE_sup_zero_Moz$FSLEmean, NLOG_VE_sup_zero_North$FSLEmean)
-wilcox.test(NLOG_VE_sup_zero_Moz$MNmean, NLOG_VE_sup_zero_North$MNmean)
-```
-
-# II : Checking the normal distribution (Shapiro tests)
-
-H0 : the data follows a normal distribution
-
-```{r Shapiro test}
-shapiro.test(NLOG_VE$NLOG_stand)
-shapiro.test(NLOG_VE$chlamean)
-shapiro.test(NLOG_VE$sstmean)
-shapiro.test(NLOG_VE$slamean)
-shapiro.test(NLOG_VE$SSCImean)
-shapiro.test(NLOG_VE$FSLEmean)
-shapiro.test(NLOG_VE$MNmean)
-```
-
-# III : Correlations between Micronecton types (Kendall tests)
-
-Related to Figure A2 and Table A1
-
-```{r}
-df_list<-list(dfMN_epi,dfMN_u,dfMN_mu,dfMN_ml,dfMN_hml)  
-dftot<-Reduce(function(x, y) merge(x, y, by=c("lat_grid", "lon_grid","year", "month")), df_list) 
-
-cor.test(dftot$micronec_epi,dftot$micronec_umeso, method = "kendall")
-cor.test(dftot$micronec_epi,dftot$micronec_mumeso, method = "kendall")
-cor.test(dftot$micronec_epi,dftot$micronec_mlmeso, method = "kendall")
-cor.test(dftot$micronec_epi,dftot$micronec_hmlmeso, method = "kendall")
-
-cor.test(dftot$micronec_umeso,dftot$micronec_mumeso, method = "kendall")
-cor.test(dftot$micronec_umeso,dftot$micronec_mlmeso, method = "kendall")
-cor.test(dftot$micronec_umeso,dftot$micronec_hmlmeso, method = "kendall")
-
-cor.test(dftot$micronec_mumeso,dftot$micronec_mlmeso, method = "kendall")
-cor.test(dftot$micronec_mumeso,dftot$micronec_hmlmeso, method = "kendall")
-
-cor.test(dftot$micronec_mlmeso,dftot$micronec_hmlmeso, method = "kendall")
-
-```
-
-# IV : Correlations between environmental variables (Kendall tests)
-
-Related to Figure A3 and Table A2
+Related to Figure A1 (values not directly displayed in the paper nor in the Appendix)
 
 ```{r correlation test between environmental variable}
 cor.test(NLOG_VE$chlamean, NLOG_VE$sstmean, method = "kendall")
@@ -119,7 +72,7 @@ cor.test(NLOG_VE$FSLEmean, NLOG_VE$SSCImean, method = "kendall")
 cor.test(NLOG_VE$FSLEmean, NLOG_VE$MNmean, method = "kendall")
 ```
 
-# V : Differences between the environmental variables according to NLOG = 0 or NLOG > 0 (Wilcoxon tests)
+# II : Differences between the environmental variables according to NLOG = 0 or NLOG > 0 (Wilcoxon tests)
 
 Related to Figure 3
 
@@ -140,7 +93,7 @@ wilcox.test(NLOG_VE_zero_Moz$MNmean,NLOG_VE_sup_zero_Moz$MNmean)
 wilcox.test(NLOG_VE_zero_North$MNmean,NLOG_VE_sup_zero_North$MNmean)
 ```
 
-Related to Table A3 (Sensitivity Analysis)
+Related to Table A1 (Sensitivity Analysis)
 
 ```{r comparison of means test with Oi,d > 10}
 wilcox.test(NLOG_VE_zero_Moz_10$chlamean,NLOG_VE_sup_zero_Moz_10$chlamean)
@@ -160,9 +113,9 @@ wilcox.test(NLOG_VE_zero_North_10$MNmean,NLOG_VE_sup_zero_North_10$MNmean)
 ```
 
 
-# VI : Correlations between NLOG and VE (Kendall tests)
+# III : Correlations between NLOG and environmental variables (Kendall tests)
 
-Related to Figure 4 and Table A4
+Related to Figure 4 and Table A2
 
 ```{r correlation test between NLOG abundance and environmental variables}
 cor.test(NLOG_VE_sup_zero_Moz$NLOG_stand, NLOG_VE_sup_zero_Moz$chlamean, method = "kendall")
@@ -183,7 +136,7 @@ cor.test(NLOG_VE_sup_zero_North$NLOG_stand, NLOG_VE_sup_zero_North$MNmean, metho
 wilcox.test(NLOG_VE_sup_zero_Moz$NLOG_stand, NLOG_VE_sup_zero_North$NLOG_stand)
 ```
 
-Related to Table A5 (Sensitivity Analysis)
+Related to Table A3 (Sensitivity Analysis)
 
 ```{r correlation test between NLOG abundance and environmental variables with Oi,d positive}
 cor.test(NLOG_VE_sup_zero_Moz_10$NLOG_stand, NLOG_VE_sup_zero_Moz_10$chlamean, method = "kendall")
@@ -202,9 +155,9 @@ cor.test(NLOG_VE_sup_zero_Moz_10$NLOG_stand, NLOG_VE_sup_zero_Moz_10$MNmean, met
 cor.test(NLOG_VE_sup_zero_North_10$NLOG_stand, NLOG_VE_sup_zero_North_10$MNmean, method = "kendall")
 ```
 
-# VII : Construction of models
+# IV : Construction of models
 
-Related to Figure 5, Figure A1, Figure A4 and Table 3
+Related to Figure 5, Table 3 and Figure A2
 
 ```{r linear models}
 NLOG_VE_sup_zero_North$chlacr <- scale(NLOG_VE_sup_zero_North$chlamean)
@@ -246,7 +199,9 @@ LM_Moz2 <- stepAIC(LM_Moz)
 summary(LM_Moz2)
 ```
 
-Related to Table A6 (Sensitivity analysis)
+## Sensitivity analysis
+
+Related to Table A4
 
 ```{r LM North with T equal 10}
 NLOG_VE_sup_zero_North_10$chlacr <- scale(NLOG_VE_sup_zero_North_10$chlamean)
@@ -258,8 +213,6 @@ NLOG_VE_sup_zero_North_10$logNLOG <- log(NLOG_VE_sup_zero_North_10$NLOG_stand)
 
 GAM_North_10 <- mgcv::gam(logNLOG ~ s(chlacr) + s(slacr) + s(SSCIcr) + s(FSLEcr) + s(MNcr),
                           data = NLOG_VE_sup_zero_North_10)
-summary(GAM_North_10)
-
 GAM_North2_10 <- stepAIC.gam(GAM_North_10)
 summary(GAM_North2_10)
 ```
@@ -272,51 +225,40 @@ NLOG_VE_sup_zero_Moz_10$FSLEcr <- scale(NLOG_VE_sup_zero_Moz_10$FSLEmean)
 NLOG_VE_sup_zero_Moz_10$MNcr <- scale(NLOG_VE_sup_zero_Moz_10$MNmean)
 NLOG_VE_sup_zero_Moz_10$logNLOG <- log(NLOG_VE_sup_zero_Moz_10$NLOG_stand)
 
-LM_Moz_chla_10 <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_Moz_10)
-summary(LM_Moz_chla_10)
-
-LM2_Moz_chla_10 <- lm(logNLOG ~ chlacr + slacr + SSCIcr + MNcr, data = NLOG_VE_sup_zero_Moz_10)
-summary(LM2_Moz_chla_10)
-
-LM3_Moz_chla_10 <- lm(logNLOG ~ slacr + SSCIcr + MNcr, data = NLOG_VE_sup_zero_Moz_10)
-summary(LM3_Moz_chla_10)
-
-LM4_Moz_chla_10 <- lm(logNLOG ~ slacr + MNcr, data = NLOG_VE_sup_zero_Moz_10)
-summary(LM4_Moz_chla_10)
-
-LM5_Moz_chla_10 <- lm(logNLOG ~ slacr, data = NLOG_VE_sup_zero_Moz_10)
-summary(LM5_Moz_chla_10)
+LM_Moz_10 <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_Moz_10)
+LM_Moz2_10 <- stepAIC(LM_Moz_10)
+summary(LM_Moz2_10)
 ```
 
-# VIII : Sampling bias analysis (Wilcoxon tests)
+# V : Sampling bias analysis (Wilcoxon tests)
 
 Related to Figure B1 and Table B1
 
 ```{r}
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$chlamean, 
-            df_eff_new[df_eff_new$Zone=="Moz",]$chlamean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$chlamean, 
-            df_eff_new[df_eff_new$Zone=="Above_10S",]$chlamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$chlamean, 
+            df_eff_new[df_eff_new$Zone=="MOZ",]$chlamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$chlamean, 
+            df_eff_new[df_eff_new$Zone=="WIO",]$chlamean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$slamean, 
-            df_eff_new[df_eff_new$Zone=="Moz",]$slamean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$slamean, 
-            df_eff_new[df_eff_new$Zone=="Above_10S",]$slamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$slamean, 
+            df_eff_new[df_eff_new$Zone=="MOZ",]$slamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$slamean, 
+            df_eff_new[df_eff_new$Zone=="WIO",]$slamean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$SSCImean, 
-            df_eff_new[df_eff_new$Zone=="Moz",]$SSCImean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$SSCImean, 
-            df_eff_new[df_eff_new$Zone=="Above_10S",]$SSCImean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$SSCImean, 
+            df_eff_new[df_eff_new$Zone=="MOZ",]$SSCImean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$SSCImean, 
+            df_eff_new[df_eff_new$Zone=="WIO",]$SSCImean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$FSLEmean, 
-            df_eff_new[df_eff_new$Zone=="Moz",]$FSLEmean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$FSLEmean, 
-            df_eff_new[df_eff_new$Zone=="Above_10S",]$FSLEmean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$FSLEmean, 
+            df_eff_new[df_eff_new$Zone=="MOZ",]$FSLEmean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$FSLEmean, 
+            df_eff_new[df_eff_new$Zone=="WIO",]$FSLEmean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$micronec_epi, 
-            df_eff_new[df_eff_new$Zone=="Moz",]$micronec_epi)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$micronec_epi, 
-            df_eff_new[df_eff_new$Zone=="Above_10S",]$micronec_epi)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$micronec_epi, 
+            df_eff_new[df_eff_new$Zone=="MOZ",]$micronec_epi)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$micronec_epi, 
+            df_eff_new[df_eff_new$Zone=="WIO",]$micronec_epi)
 ```
 
 
@@ -324,39 +266,39 @@ wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$mi
 #### Medians ####
 
 ## CHLA
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$chlamean)
-median(df_eff_new[df_eff_new$Zone=="Moz",]$chlamean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$chlamean)
+median(df_eff_new[df_eff_new$Zone=="MOZ",]$chlamean)
 
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$chlamean, na.rm = T)
-median(df_eff_new[df_eff_new$Zone=="Above_10S",]$chlamean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$chlamean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="WIO",]$chlamean, na.rm = T)
 
 ##SLA
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$slamean)
-median(df_eff_new[df_eff_new$Zone=="Moz",]$slamean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$slamean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="MOZ",]$slamean, na.rm = T)
 
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$slamean)
-median(df_eff_new[df_eff_new$Zone=="Above_10S",]$slamean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$slamean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="WIO",]$slamean, na.rm = T)
 
 ## SSCI
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$SSCImean)
-median(df_eff_new[df_eff_new$Zone=="Moz",]$SSCImean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$SSCImean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="MOZ",]$SSCImean, na.rm = T)
 
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$SSCImean)
-median(df_eff_new[df_eff_new$Zone=="Above_10S",]$SSCImean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$SSCImean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="WIO",]$SSCImean, na.rm = T)
 
 ## FSLE
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$FSLEmean)
-median(df_eff_new[df_eff_new$Zone=="Moz",]$FSLEmean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$FSLEmean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="MOZ",]$FSLEmean, na.rm = T)
 
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$FSLEmean)
-median(df_eff_new[df_eff_new$Zone=="Above_10S",]$FSLEmean)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$FSLEmean, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="WIO",]$FSLEmean, na.rm = T)
 
 ## MN
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$micronec_epi)
-median(df_eff_new[df_eff_new$Zone=="Moz",]$micronec_epi)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$micronec_epi, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="MOZ",]$micronec_epi, na.rm = T)
 
-median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$micronec_epi)
-median(df_eff_new[df_eff_new$Zone=="Above_10S",]$micronec_epi)
+median(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$micronec_epi, na.rm = T)
+median(df_eff_new[df_eff_new$Zone=="WIO",]$micronec_epi, na.rm = T)
 
 ```
 
@@ -365,60 +307,60 @@ Related to Table B2 (Sensitivity analysis of the sampled size)
 ```{r}
 # Sampled size = 50 
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$chlamean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Moz",]$chlamean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$chlamean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Above_10S",]$chlamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$chlamean, 
+            df_eff_new_50[df_eff_new_50$Zone=="MOZ",]$chlamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$chlamean, 
+            df_eff_new_50[df_eff_new_50$Zone=="WIO",]$chlamean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$slamean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Moz",]$slamean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$slamean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Above_10S",]$slamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$slamean, 
+            df_eff_new_50[df_eff_new_50$Zone=="MOZ",]$slamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$slamean, 
+            df_eff_new_50[df_eff_new_50$Zone=="WIO",]$slamean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$SSCImean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Moz",]$SSCImean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$SSCImean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Above_10S",]$SSCImean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$SSCImean, 
+            df_eff_new_50[df_eff_new_50$Zone=="MOZ",]$SSCImean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$SSCImean, 
+            df_eff_new_50[df_eff_new_50$Zone=="WIO",]$SSCImean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$FSLEmean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Moz",]$FSLEmean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$FSLEmean, 
-            df_eff_new_50[df_eff_new_50$Zone=="Above_10S",]$FSLEmean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$FSLEmean, 
+            df_eff_new_50[df_eff_new_50$Zone=="MOZ",]$FSLEmean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$FSLEmean, 
+            df_eff_new_50[df_eff_new_50$Zone=="WIO",]$FSLEmean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$micronec_epi, 
-            df_eff_new_50[df_eff_new_50$Zone=="Moz",]$micronec_epi)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$micronec_epi, 
-            df_eff_new_50[df_eff_new_50$Zone=="Above_10S",]$micronec_epi)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$micronec_epi, 
+            df_eff_new_50[df_eff_new_50$Zone=="MOZ",]$micronec_epi)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$micronec_epi, 
+            df_eff_new_50[df_eff_new_50$Zone=="WIO",]$micronec_epi)
 ```
 
 
 ```{r}
 # Sampled size = 150
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$chlamean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Moz",]$chlamean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$chlamean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Above_10S",]$chlamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$chlamean, 
+            df_eff_new_150[df_eff_new_150$Zone=="MOZ",]$chlamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$chlamean, 
+            df_eff_new_150[df_eff_new_150$Zone=="WIO",]$chlamean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$slamean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Moz",]$slamean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$slamean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Above_10S",]$slamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$slamean, 
+            df_eff_new_150[df_eff_new_150$Zone=="MOZ",]$slamean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$slamean, 
+            df_eff_new_150[df_eff_new_150$Zone=="WIO",]$slamean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$SSCImean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Moz",]$SSCImean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$SSCImean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Above_10S",]$SSCImean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$SSCImean, 
+            df_eff_new_150[df_eff_new_150$Zone=="MOZ",]$SSCImean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$SSCImean, 
+            df_eff_new_150[df_eff_new_150$Zone=="WIO",]$SSCImean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$FSLEmean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Moz",]$FSLEmean)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$FSLEmean, 
-            df_eff_new_150[df_eff_new_150$Zone=="Above_10S",]$FSLEmean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$FSLEmean, 
+            df_eff_new_150[df_eff_new_150$Zone=="MOZ",]$FSLEmean)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$FSLEmean, 
+            df_eff_new_150[df_eff_new_150$Zone=="WIO",]$FSLEmean)
 
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Moz",]$micronec_epi, 
-            df_eff_new_150[df_eff_new_150$Zone=="Moz",]$micronec_epi)
-wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="Above_10S",]$micronec_epi, 
-            df_eff_new_150[df_eff_new_150$Zone=="Above_10S",]$micronec_epi)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="MOZ",]$micronec_epi, 
+            df_eff_new_150[df_eff_new_150$Zone=="MOZ",]$micronec_epi)
+wilcox.test(df_eff[df_eff$threshold=="Fisheries" & df_eff$Zone=="WIO",]$micronec_epi, 
+            df_eff_new_150[df_eff_new_150$Zone=="WIO",]$micronec_epi)
 ```
 
 
