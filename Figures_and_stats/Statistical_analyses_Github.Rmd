@@ -178,8 +178,7 @@ NLOG_VE_sup_zero_Moz$logNLOG <- log(NLOG_VE_sup_zero_Moz$NLOG_stand)
 ## GAM for the WIO zone
 
 ```{r LM North}
-GAM_North <- mgcv::gam(logNLOG ~ s(chlacr) + s(slacr) + s(SSCIcr) + s(FSLEcr) + s(MNcr),
-                       data = NLOG_VE_sup_zero_North)
+GAM_North <- mgcv::gam(logNLOG ~ s(chlacr, k = 3) + s(slacr, k = 3) + s(SSCIcr, k = 3) + s(FSLEcr, k = 3) + s(MNcr, k = 3), data = NLOG_VE_sup_zero_North)
 summary(GAM_North)
 
 GAM_North2 <- stepAIC.gam(GAM_North)

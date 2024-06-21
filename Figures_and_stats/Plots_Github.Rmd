@@ -710,8 +710,7 @@ ggsave(file=file.path(PATH_FIG, "Fig4.eps"), fig4,
 
 ```{r}
 GAM_North <- mgcv::gam(
-  logNLOG ~ s(chlacr) + s(slacr) + s(SSCIcr) + s(FSLEcr) + s(MNcr),
-  data = NLOG_VE_sup_zero_North
+  logNLOG ~ s(chlacr, k = 3) + s(slacr, k = 3) + s(SSCIcr, k = 3) + s(FSLEcr, k = 3) + s(MNcr, k = 3), data = NLOG_VE_sup_zero_North
   )
 GAM_North2 <- stepAIC.gam(GAM_North, verbose = T)
 
