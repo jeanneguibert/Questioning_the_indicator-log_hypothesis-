@@ -21,6 +21,14 @@ NDAYS_OBS_MIN <- 6
 # resolution used to degrade the necdf files resolution (in degrees)
 resolution<-2
 
+# temporal resolution used to degrade the netcdf files resolution
+# either 'week' or 'month'
+timeresolution <- 'month'
+
+# Limits of the area considered for the study
+AREA_LIMITS <- c(xmin = 39, xmax = 90,
+                 ymin = -20, ymax = 20)
+
 #if T, read all the raw data files
 # if F, run the scripts starting at script 8 and read the outputs generated in scripts 1 to 7
 READ_DATA <- F
@@ -29,12 +37,22 @@ READ_DATA <- F
 # if F, do not run the supplementary analysis
 COMPARE_WITH_RANDOM <- T
 
+# Which NLOG density to consider
+# either 'sim', then the densities are taken from the RCp scenario in Dupaix et a. (2024) doi.org/10.1016/j.gloenvcha.2024.102917
+# or 'obs', then the densities are calculated from observers data
+# Note: if 'sim' the data is available only until 2019 and spatial res cannot be smaller than 1 degree.
+#       If 'obs', the spatial resolution cannot be smaller than 2 degrees and temporal res no less than one month
+NLOG_DATA_SOURCE = 'obs'
+
 # Names of the data files
 #------------------------
 # Observers data, with all operations on FOBs in the Indian Ocean, obtained from the Observatoire des Ecosystemes Pelagiques Tropicaux Exploites (https://www.ob7.ird.fr/pages/observatory.html)
 OBS_FILE = "all_operations_on_fobs_observe_fr_indian.csv"
 # Observers data, with all the vessels activities in the Indian Ocean, obtained from the Observatoire des Ecosystemes Pelagiques Tropicaux Exploites (https://www.ob7.ird.fr/pages/observatory.html)
 VESSEL_ACTIVITY_FILE = "all_vessel_activities_observe_fr_indian.csv"
+
+# Path to the Ichthyop simulation outputs from doi.org/10.1016/j.gloenvcha.2024.102917
+NLOG_SIM_DIR <- file.path(PATH_DATA, 'Netcdf', 'NLOG_sim')
 
 # Chlorophyll a data, obtained from https://resources.marine.copernicus.eu/product-detail/OCEANCOLOUR_GLO_CHL_L4_REP_OBSERVATIONS_009_082/DATA-ACCESS
 CHLA_FILE = c("dataset-oc-glo-bio-multi-l4-chl_4km_monthly-rep_1647279209469.nc",
@@ -60,7 +78,6 @@ SSCI_FILE = c("dataset-armor-3d-rep-monthly_1649425349783.nc",
 # Micronekton abundance (MN) data: the script will list the subfolders contained in "PATH_DATA/Netcdf/Micronecton"
 #                             	   each one must contain one file per year of a given micronekton category
 # obtained from https://resources.marine.copernicus.eu/product-detail/GLOBAL_MULTIYEAR_BGC_001_033/INFORMATION
-
 
 
 toKeep <- c(ls(), "toKeep")

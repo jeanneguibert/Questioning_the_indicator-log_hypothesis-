@@ -7,19 +7,24 @@ library(ggplot2)
 library(plyr)
 library(lubridate)
 
-df_meantot<-data.frame(matrix(nrow=0,ncol=6))
-colnames(df_meantot)=c("lat_grid", "lon_grid","SSCImean", "SSCIsd", "year", "month")
+set.seed(12345678) #####
 
-for (i in 1:length(SSCI_FILE)){
+NLOG_SIM_FILE <- list.files(NLOG_SIM_DIR, full.names = T)
+
+for (i in 1:length(NLOG_SIM_FILE)){
   #set path and filename
-  nc_name <- file.path(PATH_DATA, 'Netcdf/SSCI', SSCI_FILE[i])
+  nc_name <- NLOG_SIM_FILE[i]
   
   #open the NetCDF file
   nc <- nc_open(nc_name)
-  # print(nc)
+  #print(nc)
   
-  lon <- ncvar_get(nc, "longitude")
-  lat <- ncvar_get(nc, "latitude")
+  lon <- ncvar_get(nc,
+                   grep("lon", names(nc$dim),
+                        value = T))
+  lat <- ncvar_get(nc,
+                   grep("lat", names(nc$dim),
+                        value = T))
   time<-ncvar_get(nc, "time")
   
   nlon <- dim(lon)
@@ -38,26 +43,22 @@ for (i in 1:length(SSCI_FILE)){
   if (time_unit == "seconds"){time_unit <- "secs"}
   
   mydate <- date_origin + as.difftime(time, units = time_unit)
+  # myyear<-year(mydate)
+  # mymonth<-month(mydate)
+  # myweek <- lubridate::week(mydate)
+  # myday<-day(mydate)
   
-  #extract SSCI
-  varSSCIu <- "ugo" 
-  varSSCIv <- "vgo"
-  T_arrayu <- ncvar_get(nc, varSSCIu)
-  T_arrayv <- ncvar_get(nc, varSSCIv)
+  #extract chla
+  varnlog <- "NLOG" 
+  T_array <- ncvar_get(nc, varnlog)
   
   #variable's attributes
-  long_name_u <- ncatt_get(nc, varSSCIu, "long_name")   #long name
-  T_units_u <- ncatt_get(nc, varSSCIu, "units")         #measure unit
-  fillvalue_u <- ncatt_get(nc, varSSCIu, "_FillValue")  #(optional)  
-  long_name_v <- ncatt_get(nc, varSSCIv, "long_name")   #long name
-  T_units_v <- ncatt_get(nc, varSSCIv, "units")         #measure unit
-  fillvalue_v <- ncatt_get(nc, varSSCIv, "_FillValue")  #(optional)  
+  long_name <- ncatt_get(nc, varnlog, "long_name")   #long name
+  T_units <- ncatt_get(nc, varnlog, "units")         #measure unit
+  fillvalue <- ncatt_get(nc, varnlog, "_FillValue")  #(optional)  
   
   ## put NA values for missing values in the NetCDF file
-  T_arrayu[T_arrayu == fillvalue_u$value] <- NA
-  T_arrayv[T_arrayv == fillvalue_v$value] <- NA
-  
-  T_array <- sqrt(T_arrayv^2 + T_arrayu^2)
+  T_array[T_array == fillvalue$value] <- NA
   dimnames(T_array)[[1]] <- lon
   dimnames(T_array)[[2]] <- lat
   dimnames(T_array)[[3]] <- as.character(mydate)
@@ -79,16 +80,18 @@ for (i in 1:length(SSCI_FILE)){
       time = unique_time_groups
     )
   )
-  df_mean$SSCImean <- as.vector(averaged_means)
-  df_mean$SSCIsd <- as.vector(averaged_sds)
+  df_mean$nlogmean <- as.vector(averaged_means)
+  df_mean$nlogsd <- as.vector(averaged_sds)
   
   if (i == 1){
     df_meantot<-data.frame(matrix(nrow=0,ncol=5))
-    colnames(df_meantot)=c("lon_grid", "lat_grid", "time", "SSCImean", "SSCIsd")
+    colnames(df_meantot)=c("lon_grid", "lat_grid", "time", "nlogmean", "nlogsd")
   }
   
   df_meantot<-rbind(df_meantot,df_mean)
   
 }
 
-write.csv(df_meantot,file=file.path(PATH_OUTPUT,"SSCI_mean.csv"),row.names = F)
+###Save file ###############################################################
+write.csv(df_meantot, file=file.path(PATH_OUTPUT, "NLOG_density.csv"), row.names = F)
+

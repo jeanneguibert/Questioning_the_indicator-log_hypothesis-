@@ -12,8 +12,8 @@ dfFSLE<-read.csv(file.path(PATH_OUTPUT, "FSLE_mean.csv"), header = T)
 dfSSCI<-read.csv(file.path(PATH_OUTPUT, "SSCI_mean.csv"), header = T)
 dfMN<-read.csv(file.path(PATH_OUTPUT, "MN_epi_mean.csv"), header = T)
 
-colnames(dfMN)[3] <- "MNmean"
-colnames(dfMN)[4] <- "MNsd"
+colnames(dfMN)[which(colnames(dfMN) == "micronec_epi")] <- "MNmean"
+colnames(dfMN)[which(colnames(dfMN) == "micronec_episd")] <- "MNsd"
 
 ###############Merge 
 df_list<-list(dfNLOG,dfChla,dfSST,dfSLA,dfFSLE,dfSSCI,dfMN)  
@@ -21,14 +21,28 @@ dftot<-Reduce(function(x, y) merge(x, y, by=c("lat_grid", "lon_grid","year", "mo
 summary(dftot)
 
 #filter to keep only years of interest
+#' and only area of interest (area_limits = c(xmin = 39, xmax = 90,
+#'                                            ymin = -20, ymax = 20))
 dftot %>%
-  dplyr::filter(year %in% YEARS) -> dftot
+  dplyr::filter(year %in% YEARS,
+                lon_grid >= AREA_LIMITS['xmin'] & lon_grid <= AREA_LIMITS['xmax'],
+                lat_grid >= AREA_LIMITS['ymin'] & lat_grid <= AREA_LIMITS['ymax']) -> dftot
 
 #ajout Zone
 dftot$Zone <- as.factor(ifelse(dftot$lat_grid<(-10) & dftot$lon_grid<=(50),"MOZ","WIO"))
 
 #ajout Season
-dftot$month <-as.numeric(dftot$month)
+if (timeresolution == 'month'){
+  dftot$month <-as.numeric(gsub(".*-", "", dftot$time))
+} else if (timeresolution == 'week'){
+  dftot$weekday <- as.Date(paste(gsub("-.*", "", dftot$time),
+                                 '01-01',
+                                 sep = '-')) +
+    as.difftime((as.numeric(gsub(".*-", "", dftot$time))-1)*7,
+                units = 'days')
+  dftot$month <- as.numeric(lubridate::month(dftot$weekday))
+  dftot %>% dplyr::select(-weekday) -> dftot
+}
 
 dftot$Season <-  NA
 dftot$Season <- ifelse(dftot$month%in%c(12,1,2,3),"DJFM",dftot$Season)
