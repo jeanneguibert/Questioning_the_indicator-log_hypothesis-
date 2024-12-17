@@ -41,7 +41,7 @@ for (i in 1:length(CHLA_FILE)){
   mydate <- date_origin + as.difftime(time, units = time_unit)
   
   #extract chla
-  varchla <- "CHL" 
+  varchla <- grep('CHL', names(nc$var), ignore.case = T, value = T)
   T_array <- ncvar_get(nc, varchla)
   
   #variable's attributes
