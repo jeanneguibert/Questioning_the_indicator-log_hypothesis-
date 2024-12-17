@@ -43,7 +43,7 @@ for (idir in subdir_list){
     t_month <- as.integer(unlist(t_dstr)[2])
     t_day <- as.integer(unlist(t_dstr)[3])
     t_year <- as.integer(unlist(t_dstr)[1])
-    chron(floor(time/86400),origin=c(t_day, t_month, t_year),format = "d/m/y")
+    # chron(floor(time/86400),origin=c(t_day, t_month, t_year),format = "d/m/y")
     
     #Pour avoir l'annee, le mois ou le jour :
     mydate<-chron(floor(time/86400),origin=c(t_day, t_month, t_year),format = "d/m/y")
@@ -61,9 +61,9 @@ for (idir in subdir_list){
     
     ## put NA values for missing values in the NetCDF file
     T_array[T_array == fillvalue$value] <- NA
-    dimnames(T_array)[[1]] <- lon
-    dimnames(T_array)[[2]] <- lat
-    dimnames(T_array)[[3]] <- as.character(mydate)
+    dimnames(T_array)[[which(dim(T_array) == length(lon))]] <- lon
+    dimnames(T_array)[[which(dim(T_array) == length(lat))]] <- lat
+    dimnames(T_array)[[which(dim(T_array) == length(mydate))]] <- as.character(mydate)
     
     # Average over time and spatial resolution
     averaged_results <- average_blocks_fast(array = T_array,
@@ -87,9 +87,11 @@ for (idir in subdir_list){
     
     df_meantot<-rbind(df_meantot,df_mean)
     
+    nc_close(nc)
+    
   }
   
-  names(df_meantot) <- c("lat_grid", "lon_grid","time",
+  names(df_meantot) <- c("lon_grid", "lat_grid","time",
                          paste0('micronec_',idir,'_mean'),
                          paste0('micronec_',idir,'_sd'))
   

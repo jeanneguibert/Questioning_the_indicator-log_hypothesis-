@@ -9,7 +9,7 @@ library(ggplot2)
 file_list<-list.files(file.path(PATH_DATA, "Netcdf/FSLE"), full.names = T, pattern = ".nc$")
 
 df_meantot<-data.frame(matrix(nrow=0,ncol=6))
-colnames(df_meantot)=c("lat_grid", "lon_grid","FSLEmean", "FSLEsd", "year", "month")
+colnames(df_meantot)=c("lat_grid", "lon_grid", 'time', "FSLEmean", "FSLEsd")
 
 for (ifile in file_list){
 
@@ -72,13 +72,8 @@ for (ifile in file_list){
       time = unique_time_groups
     )
   )
-  df_mean$FLSEmean <- as.vector(averaged_means)
+  df_mean$FSLEmean <- as.vector(averaged_means)
   df_mean$FSLEsd <- as.vector(averaged_sds)
-  
-  if (i == 1){
-    df_meantot<-data.frame(matrix(nrow=0,ncol=5))
-    colnames(df_meantot)=c("lon_grid", "lat_grid", "time", "FSLEmean", "FSLEsd")
-  }
   
   df_meantot<-rbind(df_meantot,df_mean)
 }
