@@ -3,6 +3,8 @@
 #create output directory
 dir.create(PATH_OUTPUT, showWarnings = F)
 
+source(file = file.path(PATH_FUNC, "average_arrays.R"))
+
 if(READ_DATA){
   cat("Reading raw datasets\n==================\n\n")
   # source the script calculating the NLOG densities from observers data
