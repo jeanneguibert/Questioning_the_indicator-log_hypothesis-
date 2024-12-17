@@ -7,6 +7,7 @@ plot.gam.prediction <- function(data, my_gam,
                                 lims.y = c(NA,NA),
                                 transformation = T,
                                 trans.back = identity,
+                                error.lines = T,
                                 l = 200){
   df <- data.frame(seq(min(data[,var_to_predict]),max(data[,var_to_predict]), length.out = l))
   names(df) <- var_to_predict
@@ -31,22 +32,32 @@ plot.gam.prediction <- function(data, my_gam,
     lwr <- rep(0, length(lwr))
   }
   
-  g <-
-    ggplot()+
-    geom_line(aes(x = df[,var_to_predict],
-                  y = p$fit))+
-    geom_line(aes(x = df[,var_to_predict],
-                  y = upr),
-              linetype = "dotted")+
-    geom_line(aes(x = df[,var_to_predict],
-                  y = lwr),
-              linetype = "dotted")+
-    scale_y_continuous(limits = lims.y)+
-    xlab(xlabel)+ ylab(ylabel)+
-    theme(panel.background = element_rect(fill = "white",
-                                          color = "black"))
+  if (!error.lines){
+    g <-
+      ggplot()+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = p$fit))+
+      scale_y_continuous(limits = lims.y)+
+      xlab(xlabel)+ ylab(ylabel)+
+      theme(panel.background = element_rect(fill = "white",
+                                            color = "black"))
+  } else {
+    g <-
+      ggplot()+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = p$fit))+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = upr),
+                linetype = "dotted")+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = lwr),
+                linetype = "dotted")+
+      scale_y_continuous(limits = lims.y)+
+      xlab(xlabel)+ ylab(ylabel)+
+      theme(panel.background = element_rect(fill = "white",
+                                            color = "black"))
+  }
 
-  
   xhist <- 
     axis_canvas(g, axis = "x") + 
     geom_histogram(aes(x = data[,var_to_predict],
