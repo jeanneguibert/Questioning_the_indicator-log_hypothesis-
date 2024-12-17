@@ -55,14 +55,21 @@ VESSEL_ACTIVITY_FILE = "all_vessel_activities_observe_fr_indian.csv"
 NLOG_SIM_DIR <- file.path(PATH_DATA, 'Netcdf', 'NLOG_sim')
 
 # Chlorophyll a data, obtained from https://resources.marine.copernicus.eu/product-detail/OCEANCOLOUR_GLO_CHL_L4_REP_OBSERVATIONS_009_082/DATA-ACCESS
+#                     for comparison with observers data
+#                     obtained from https://data.marine.copernicus.eu/product/GLOBAL_MULTIYEAR_BGC_001_029/download
+#                     for comparison with NLOG simulation outputs
 CHLA_FILE = c("dataset-oc-glo-bio-multi-l4-chl_4km_monthly-rep_1647279209469.nc",
               "c3s_obs-oc_glo_bgc-plankton_my_l4-multi-4km_P1M_1717432873459.nc")
 
 # Sea Surface Temperature data, obtained from https://resources.marine.copernicus.eu/product-detail/MULTIOBS_GLO_PHY_TSUV_3D_MYNRT_015_012/INFORMATION
+# monthly mean used for comparison with observers data
+# weekly mean used for comparison with NLOG simulation outputs
 SST_FILE = c("dataset-armor-3d-rep-monthly_1647784901742.nc",
              "dataset-armor-3d-rep-monthly_1715955984049.nc")
 
 # Sea Level Anomaly data, obtained from https://resources.marine.copernicus.eu/product-detail/SEALEVEL_GLO_PHY_L4_MY_008_047/INFORMATION
+# monthly mean used for comparison with observers data
+# weekly mean used for comparison with NLOG simulation outputs
 SLA_FILE = c("cmems_obs-sl_glo_phy-ssh_my_allsat-l4-duacs-0.25deg_P1M-m_1648036488919.nc",
              "cmems_obs-sl_glo_phy-ssh_my_allsat-l4-duacs-0.25deg_P1M-m_1715956225446.nc")
 
@@ -72,6 +79,8 @@ SLA_FILE = c("cmems_obs-sl_glo_phy-ssh_my_allsat-l4-duacs-0.25deg_P1M-m_16480364
 
 # Sea Surface Current data, to calculate the Sea Surface Current Intensity data
 # obtained from https://resources.marine.copernicus.eu/product-detail/MULTIOBS_GLO_PHY_TSUV_3D_MYNRT_015_012/DATA-ACCESS
+# monthly mean used for comparison with observers data
+# weekly mean used for comparison with NLOG simulation outputs
 SSCI_FILE = c("dataset-armor-3d-rep-monthly_1649425349783.nc",
               "dataset-armor-3d-rep-monthly_1715955038031.nc")
 
