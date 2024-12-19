@@ -23,14 +23,16 @@ plot.gam.prediction <- function(data, my_gam,
   
   
   if (transformation){
+    upr <- trans.back(p$fit + p$se.fit)
+    lwr <- trans.back(p$fit - p$se.fit)
     p$fit <- trans.back(p$fit)
-    p$se.fit <- trans.back(p$se.fit)
+  } else {
+    upr <- p$fit + (p$se.fit)
+    lwr <- p$fit - (p$se.fit)
   }
-  upr <- p$fit + (p$se.fit)
-  lwr <- p$fit - (p$se.fit)
-  if (all(lwr<0)){
-    lwr <- rep(0, length(lwr))
-  }
+  # if (all(lwr<0) & all(p$fit > 0)){
+  #   lwr <- rep(0, length(lwr))
+  # }
   
   if (!error.lines){
     g <-
