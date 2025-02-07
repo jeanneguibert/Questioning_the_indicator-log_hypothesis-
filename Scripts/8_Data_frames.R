@@ -23,22 +23,32 @@ if (NLOG_DATA_SOURCE == 'sim'){
   merging_cols <- c("lat_grid", "lon_grid","year", "month")
 }
 dftot<-Reduce(function(x, y) merge(x, y, by=merging_cols), df_list)  
-summary(dftot)
-
-#filter to keep only years of interest
-#' and only area of interest (area_limits = c(xmin = 39, xmax = 90,
-#'                                            ymin = -20, ymax = 20))
-dftot %>%
-  dplyr::mutate(year = as.numeric(gsub('-.*', '', time))) %>%
-  dplyr::filter(year %in% YEARS,
-                lon_grid >= AREA_LIMITS['xmin'] & lon_grid <= AREA_LIMITS['xmax'],
-                lat_grid >= AREA_LIMITS['ymin'] & lat_grid <= AREA_LIMITS['ymax']) %>%
-  tidyr::drop_na() -> dftot
+# summary(dftot)
 
 #ajout Zone
 dftot$Zone <- as.factor(ifelse(dftot$lat_grid<(-10) & dftot$lon_grid<=(50),"MOZ","WIO"))
 dftot$Zone <- as.factor(ifelse(dftot$lon_grid<=50 & dftot$lon_grid>47 & dftot$lat_grid<(-15),
                                'WIO', as.character(dftot$Zone)))
+
+#filter to keep only years of interest
+#' and only area of interest (area_limits = c(xmin = 39, xmax = 90,
+#'                                            ymin = -20, ymax = 20))
+if (NLOG_DATA_SOURCE == 'obs'){
+  dftot %>%
+    dplyr::mutate(year = as.numeric(gsub('-.*', '', time))) %>%
+    dplyr::filter(year %in% YEARS,
+                  lon_grid >= AREA_LIMITS['xmin'] & lon_grid <= AREA_LIMITS['xmax'],
+                  lat_grid >= AREA_LIMITS['ymin'] & lat_grid <= AREA_LIMITS['ymax']) %>%
+    tidyr::drop_na() -> dftot
+} else if (NLOG_DATA_SOURCE == 'sim'){
+  dftot %>%
+    dplyr::mutate(year = as.numeric(gsub('-.*', '', time))) %>%
+    dplyr::filter(year %in% YEARS,
+                  lon_grid >= AREA_LIMITS['xmin'] & lon_grid <= AREA_LIMITS['xmax'] | Zone == 'MOZ',
+                  lat_grid >= AREA_LIMITS['ymin'] & lat_grid <= AREA_LIMITS['ymax'] | Zone == 'MOZ') %>%
+    tidyr::drop_na() -> dftot
+}
+
 
 #ajout Season
 if (timeresolution == 'month'){
