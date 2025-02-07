@@ -1,8 +1,8 @@
 # Questioning the validity of the indicator-log hypothesis for tropical tuna
 
-<!-- [![License](https://img.shields.io/github/license/jeanneguibert/Questioning_the_indicator-log_hypothesis-)](https://github.com/jeanneguibert/Questioning_the_indicator-log_hypothesis-/blob/master/LICENSE)
-[![DOI](https://zenodo.org/badge/416344484.svg)](https://zenodo.org/badge/latestdoi/416344484)
-[![Latest Release](https://img.shields.io/github/release/jeanneguibert/Questioning_the_indicator-log_hypothesis-)](https://github.com/adupaix/jeanneguibert/Questioning_the_indicator-log_hypothesis-) -->
+[![License](https://img.shields.io/github/license/jeanneguibert/Questioning_the_indicator-log_hypothesis-)](https://github.com/jeanneguibert/Questioning_the_indicator-log_hypothesis-/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/569626037.svg)](https://zenodo.org/badge/latestdoi/569626037)
+[![Latest Release](https://img.shields.io/github/release/jeanneguibert/Questioning_the_indicator-log_hypothesis-)](https://github.com/adupaix/jeanneguibert/Questioning_the_indicator-log_hypothesis-)
 
 These are the scripts which were used to generate the results presented in the following study:
 
