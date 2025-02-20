@@ -148,21 +148,17 @@ fig2 <- ggplot(data = Ob7_NLOG) +
            position = position_dodge2(width = 1,
                                       preserve = "single",
                                       padding = 0))+ 
-  stat_count(aes(x = year, y=..count.., fill=as.factor(Zone), label=..count..),
-             size = 6, geom="text", vjust=-0.5,
-             position = position_dodge2(width = 0.9,
-                                        preserve = "single",
-                                        padding = 0))+
+  # stat_count(aes(x = year, y=..count.., fill=as.factor(Zone), label=..count..),
+  #            size = 6, geom="text", vjust=-0.5,
+  #            position = position_dodge2(width = 0.9,
+  #                                       preserve = "single",
+  #                                       padding = 0))+
   ylab("Number of observations")+
   scale_x_continuous(name="Years", breaks=2014:2022,  
                      labels = 2014:2022)+
   scale_fill_manual(values = c("grey48","grey86"), name = "Zone")+
-  theme(panel.border = element_rect(fill = NA, colour = "black"))+
-  theme(text = element_text(size = 25))+
-  theme(axis.text.x = element_text(size = 25))+
-  theme(axis.text.y = element_text(size = 25))+
-  theme(legend.text = element_text(size=25))+
-  theme(legend.key.size = unit(1, 'cm'))
+  theme(panel.background = element_rect(fill = 'white', colour = "black"),
+        panel.grid = element_line(color = 'grey', linetype = 'dashed'))
 ``` 
 
 ## Save plot
