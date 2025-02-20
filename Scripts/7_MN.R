@@ -19,10 +19,9 @@ for (idir in subdir_list){
   file_list <- list.files(file.path(PATH_DATA, "Netcdf/Micronecton", idir),
                           full.names = T)
   
-  df_meantot<-data.frame(matrix(nrow=0,ncol=6))
-  colnames(df_meantot)=c("lat_grid", "lon_grid","year", "month",
-                         paste0("micronec_",idir,"mean"),
-                         paste0("micronec_",idir,"sd"))
+  df_meantot<-data.frame(matrix(nrow=0,ncol=5))
+  colnames(df_meantot)=c("lat_grid", "lon_grid","time",
+                         'micronec_mean', 'micronec_sd')
   
   for (ifile in file_list){
     #open the NetCDF file
@@ -44,15 +43,11 @@ for (idir in subdir_list){
     t_month <- as.integer(unlist(t_dstr)[2])
     t_day <- as.integer(unlist(t_dstr)[3])
     t_year <- as.integer(unlist(t_dstr)[1])
-    chron(floor(time/86400),origin=c(t_day, t_month, t_year),format = "d/m/y")
+    # chron(floor(time/86400),origin=c(t_day, t_month, t_year),format = "d/m/y")
     
     #Pour avoir l'annee, le mois ou le jour :
     mydate<-chron(floor(time/86400),origin=c(t_day, t_month, t_year),format = "d/m/y")
-    
     mydate<-as.Date(mydate,'%Y/%m/%d')
-    myyear<-year(mydate)
-    mymonth<-month(mydate)
-    myday<-day(mydate)
     
     #extract micronecton
     var <- paste0("mnkc_",idir) 
@@ -66,38 +61,41 @@ for (idir in subdir_list){
     
     ## put NA values for missing values in the NetCDF file
     T_array[T_array == fillvalue$value] <- NA
-    invisible(gc())
+    dimnames(T_array)[[which(dim(T_array) == length(lon))]] <- lon
+    dimnames(T_array)[[which(dim(T_array) == length(lat))]] <- lat
+    dimnames(T_array)[[which(dim(T_array) == length(mydate))]] <- as.character(mydate)
     
-    #estimate mean for each year, month and 2? cell
+    # Average over time and spatial resolution
+    averaged_results <- average_blocks_fast(array = T_array,
+                                            lon_res = resolution, lat_res = resolution,
+                                            timeresolution = timeresolution)
     
-    grid <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
-    iyear<-unique(myyear)
-    for (imonth in c(1:12)){
-      datesel<-(mymonth ==imonth)
-      T_slice<-T_array[,,datesel]
-      ndays<-sum(datesel)
-      grid_1day <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
-      grid <- as.data.frame(cbind(lon = rep(grid_1day$lon, ndays),
-                                  lat = rep(grid_1day$lat, ndays)))
-      
-      grid$micronec_epi<-as.vector(T_slice)
-      df<-subset(grid,!is.na(micronec_epi))
-      df$lat_grid<-resolution*floor(df$lat/resolution) 
-      df$lon_grid<-resolution*floor(df$lon/resolution) 
-      df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,micronec_epi=mean(micronec_epi),micronec_episd=sd(micronec_epi))#moyenne
-      names(df_mean)[which(names(df_mean) == "micronec_epi")] <- paste0("micronec_",idir)
-      names(df_mean)[which(names(df_mean) == "micronec_episd")] <- paste0("micronec_",idir,"sd")
-      df_mean$year<-iyear
-      df_mean$month<-imonth
-      df_meantot<-rbind(df_meantot,df_mean)
-      
-      rm(grid, df, df_mean, T_slice)
-      invisible(gc())
-    }
-    rm(T_array)
-    invisible(gc())
+    averaged_means <- averaged_results$means
+    averaged_sds <- averaged_results$sds
+    unique_time_groups <- averaged_results$time_groups
+    
+    # Convert the results to a data frame
+    df_mean <- as.data.frame(
+      expand.grid(
+        lon_grid = averaged_results$lon_grid,
+        lat_grid = averaged_results$lat_grid,
+        time = unique_time_groups
+      )
+    )
+    df_mean$micronec_mean <- as.vector(averaged_means)
+    df_mean$micronec_sd <- as.vector(averaged_sds)
+    
+    df_meantot<-rbind(df_meantot,df_mean)
+    
+    nc_close(nc)
+    
   }
+  
+  names(df_meantot) <- c("lon_grid", "lat_grid","time",
+                         paste0('micronec_',idir,'_mean'),
+                         paste0('micronec_',idir,'_sd'))
   
   write.csv(df_meantot,file=file.path(PATH_OUTPUT, paste0("MN_",idir,"_mean.csv")),row.names = F)
   
 }
+

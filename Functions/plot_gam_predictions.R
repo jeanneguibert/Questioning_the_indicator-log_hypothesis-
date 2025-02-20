@@ -7,6 +7,7 @@ plot.gam.prediction <- function(data, my_gam,
                                 lims.y = c(NA,NA),
                                 transformation = T,
                                 trans.back = identity,
+                                error.lines = T,
                                 l = 200){
   df <- data.frame(seq(min(data[,var_to_predict]),max(data[,var_to_predict]), length.out = l))
   names(df) <- var_to_predict
@@ -22,31 +23,43 @@ plot.gam.prediction <- function(data, my_gam,
   
   
   if (transformation){
+    upr <- trans.back(p$fit + p$se.fit)
+    lwr <- trans.back(p$fit - p$se.fit)
     p$fit <- trans.back(p$fit)
-    p$se.fit <- trans.back(p$se.fit)
+  } else {
+    upr <- p$fit + (p$se.fit)
+    lwr <- p$fit - (p$se.fit)
   }
-  upr <- p$fit + (p$se.fit)
-  lwr <- p$fit - (p$se.fit)
-  if (all(lwr<0)){
-    lwr <- rep(0, length(lwr))
-  }
+  # if (all(lwr<0) & all(p$fit > 0)){
+  #   lwr <- rep(0, length(lwr))
+  # }
   
-  g <-
-    ggplot()+
-    geom_line(aes(x = df[,var_to_predict],
-                  y = p$fit))+
-    geom_line(aes(x = df[,var_to_predict],
-                  y = upr),
-              linetype = "dotted")+
-    geom_line(aes(x = df[,var_to_predict],
-                  y = lwr),
-              linetype = "dotted")+
-    scale_y_continuous(limits = lims.y)+
-    xlab(xlabel)+ ylab(ylabel)+
-    theme(panel.background = element_rect(fill = "white",
-                                          color = "black"))
+  if (!error.lines){
+    g <-
+      ggplot()+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = p$fit))+
+      scale_y_continuous(limits = lims.y)+
+      xlab(xlabel)+ ylab(ylabel)+
+      theme(panel.background = element_rect(fill = "white",
+                                            color = "black"))
+  } else {
+    g <-
+      ggplot()+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = p$fit))+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = upr),
+                linetype = "dotted")+
+      geom_line(aes(x = df[,var_to_predict],
+                    y = lwr),
+                linetype = "dotted")+
+      scale_y_continuous(limits = lims.y)+
+      xlab(xlabel)+ ylab(ylabel)+
+      theme(panel.background = element_rect(fill = "white",
+                                            color = "black"))
+  }
 
-  
   xhist <- 
     axis_canvas(g, axis = "x") + 
     geom_histogram(aes(x = data[,var_to_predict],

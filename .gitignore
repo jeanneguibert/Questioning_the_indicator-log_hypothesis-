@@ -3,3 +3,5 @@ Data
 config/*
 
 !config/config_ex.R
+!config/config_obs.R
+!config/config_sim.R

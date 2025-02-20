@@ -38,9 +38,6 @@ for (i in 1:length(SSCI_FILE)){
   if (time_unit == "seconds"){time_unit <- "secs"}
   
   mydate <- date_origin + as.difftime(time, units = time_unit)
-  myyear<-year(mydate)
-  mymonth<-month(mydate)
-  myday<-day(mydate)
   
   #extract SSCI
   varSSCIu <- "ugo" 
@@ -60,25 +57,38 @@ for (i in 1:length(SSCI_FILE)){
   T_arrayu[T_arrayu == fillvalue_u$value] <- NA
   T_arrayv[T_arrayv == fillvalue_v$value] <- NA
   
-  r <- sqrt(T_arrayv^2 + T_arrayu^2)
+  T_array <- sqrt(T_arrayv^2 + T_arrayu^2)
+  dimnames(T_array)[[1]] <- lon
+  dimnames(T_array)[[2]] <- lat
+  dimnames(T_array)[[3]] <- as.character(mydate)
   
-  #estimate mean for each year, month and 2° cell
-  grid <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
-  for (i in 1:length(mydate)){
-    date <- mydate[i]
-    iyear = lubridate::year(date)
-    imonth = lubridate::month(date)
-    datesel<-myyear==iyear & mymonth==imonth
-    T_slice<-r[,,datesel]
-    grid$SSCI<-as.vector(T_slice)
-    df<-subset(grid,!is.na(SSCI))
-    df$lat_grid<-resolution*floor(df$lat/resolution) 
-    df$lon_grid<-resolution*floor(df$lon/resolution) 
-    df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,SSCImean=mean(SSCI),SSCIsd=sd(SSCI))#moyenne
-    df_mean$year<-iyear
-    df_mean$month<-imonth
-    df_meantot<-rbind(df_meantot,df_mean)
+  # Average over time and spatial resolution
+  averaged_results <- average_blocks_fast(array = T_array,
+                                          lon_res = resolution, lat_res = resolution,
+                                          timeresolution = timeresolution)
+  
+  averaged_means <- averaged_results$means
+  averaged_sds <- averaged_results$sds
+  unique_time_groups <- averaged_results$time_groups
+  
+  # Convert the results to a data frame
+  df_mean <- as.data.frame(
+    expand.grid(
+      lon_grid = averaged_results$lon_grid,
+      lat_grid = averaged_results$lat_grid,
+      time = unique_time_groups
+    )
+  )
+  df_mean$SSCImean <- as.vector(averaged_means)
+  df_mean$SSCIsd <- as.vector(averaged_sds)
+  
+  if (i == 1){
+    df_meantot<-data.frame(matrix(nrow=0,ncol=5))
+    colnames(df_meantot)=c("lon_grid", "lat_grid", "time", "SSCImean", "SSCIsd")
   }
+  
+  df_meantot<-rbind(df_meantot,df_mean)
+  
 }
 
 write.csv(df_meantot,file=file.path(PATH_OUTPUT,"SSCI_mean.csv"),row.names = F)

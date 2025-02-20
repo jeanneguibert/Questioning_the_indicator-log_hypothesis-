@@ -1,0 +1,151 @@
+---
+title: "Statistical analyses - simulation outputs"
+author: "J. Guibert & A. Dupaix"
+date: "20/11/2022 - update 23/05/2024 - 17/12/2024"
+output: pdf_document
+toc: true
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F) 
+library(MASS)
+library(mgcv)
+library(dplyr)
+```
+
+\newpage
+
+# Required data sets
+
+```{r data frame}
+WD <- ".."
+PATH_OUTPUT <- file.path(WD, "Outputs_sim_smallarea")
+PATH_FUNC <- file.path(WD, "Functions")
+source(file.path(PATH_FUNC, "stepAIC_gam.R"))
+
+NLOG_VE <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE.csv"), head = T)
+
+NLOG_VE$logNLOG <- log(NLOG_VE$nlogmean)
+NLOG_VE$chlacr <- scale(NLOG_VE$chlamean)
+NLOG_VE$slacr <- scale(NLOG_VE$slamean)
+NLOG_VE$SSCIcr <- scale(NLOG_VE$SSCImean)
+NLOG_VE$FSLEcr <- scale(NLOG_VE$FSLEmean)
+NLOG_VE$MNcr <- scale(NLOG_VE$MNmean)
+
+NLOG_VE_sup_zero_Moz <- NLOG_VE %>% dplyr::filter(Zone == 'MOZ', nlogmean > 0)
+NLOG_VE_sup_zero_North <- NLOG_VE %>% dplyr::filter(Zone == 'WIO', nlogmean > 0)
+
+# NLOG_VE_zero <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE_zero.csv"), head = T)
+# 
+# NLOG_VE_zero_Moz <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE_zero_Moz.csv"), head = T)
+# NLOG_VE_zero_North <- read.csv(file.path(PATH_OUTPUT, "NLOG_VE_zero_North.csv"), head = T)
+# 
+# dfMN_epi<-read.csv(file.path(PATH_OUTPUT, "MN_epi_mean.csv"), header = T)
+# dfMN_u<-read.csv(file.path(PATH_OUTPUT, "MN_umeso_mean.csv"), header = T)
+# dfMN_mu<-read.csv(file.path(PATH_OUTPUT, "MN_mumeso_mean.csv"), header = T)
+# dfMN_ml<-read.csv(file.path(PATH_OUTPUT, "MN_mlmeso_mean.csv"), header = T)
+# dfMN_hml<-read.csv(file.path(PATH_OUTPUT, "MN_hmlmeso_mean.csv"), header = T)
+
+# df_eff <- read.csv(file.path(PATH_OUTPUT, "df_eff.csv"), head = T)
+# df_eff_new <- read.csv(file.path(PATH_OUTPUT, "df_eff_new_100.csv"), head = T)
+# df_eff_new_50 <- read.csv(file.path(PATH_OUTPUT, "df_eff_new_50.csv"), head = T)
+# df_eff_new_150 <- read.csv(file.path(PATH_OUTPUT, "df_eff_new_150.csv"), head = T)
+
+# For the Sensitivity analysis (T = 10)
+
+# NLOG_VE_zero_Moz_10 <- NLOG_VE_zero_Moz[NLOG_VE_zero_Moz$NumOBS>=10,]
+# NLOG_VE_zero_North_10 <- NLOG_VE_zero_North[NLOG_VE_zero_North$NumOBS>=10,]
+# NLOG_VE_sup_zero_Moz_10 <- NLOG_VE_sup_zero_Moz[NLOG_VE_sup_zero_Moz$NumOBS>=10,]
+# NLOG_VE_sup_zero_North_10 <- NLOG_VE_sup_zero_North[NLOG_VE_sup_zero_North$NumOBS>=10,]
+```
+
+# I : Correlations between environmental variables (Kendall tests)
+
+Related to Figure A1 (values not directly displayed in the paper nor in the Appendix)
+
+```{r correlation test between environmental variable}
+# cor.test(NLOG_VE$chlamean, NLOG_VE$sstmean, method = "kendall")
+# cor.test(NLOG_VE$chlamean, NLOG_VE$slamean, method = "kendall")
+# cor.test(NLOG_VE$chlamean, NLOG_VE$SSCImean, method = "kendall")
+# cor.test(NLOG_VE$chlamean, NLOG_VE$FSLEmean, method = "kendall")
+# cor.test(NLOG_VE$chlamean, NLOG_VE$MNmean, method = "kendall")
+# cor.test(NLOG_VE$sstmean, NLOG_VE$slamean, method = "kendall")
+# cor.test(NLOG_VE$sstmean, NLOG_VE$SSCImean, method = "kendall")
+# cor.test(NLOG_VE$sstmean, NLOG_VE$FSLEmean, method = "kendall")
+# cor.test(NLOG_VE$sstmean, NLOG_VE$MNmean, method = "kendall")
+# cor.test(NLOG_VE$slamean, NLOG_VE$SSCImean, method = "kendall")
+# cor.test(NLOG_VE$slamean, NLOG_VE$FSLEmean, method = "kendall")
+# cor.test(NLOG_VE$slamean, NLOG_VE$MNmean, method = "kendall")
+# cor.test(NLOG_VE$SSCImean, NLOG_VE$MNmean, method = "kendall")
+# cor.test(NLOG_VE$FSLEmean, NLOG_VE$SSCImean, method = "kendall")
+# cor.test(NLOG_VE$FSLEmean, NLOG_VE$MNmean, method = "kendall")
+```
+
+# III : Correlations between NLOG and environmental variables (Kendall tests)
+
+Related to Figure 4 and Table A2
+
+```{r correlation test between NLOG abundance and environmental variables}
+cor.test(NLOG_VE_sup_zero_Moz$nlogmean, NLOG_VE_sup_zero_Moz$chlamean, method = "kendall")
+cor.test(NLOG_VE_sup_zero_North$nlogmean, NLOG_VE_sup_zero_North$chlamean, method = "kendall")
+
+cor.test(NLOG_VE_sup_zero_Moz$nlogmean, NLOG_VE_sup_zero_Moz$slamean, method = "kendall")
+cor.test(NLOG_VE_sup_zero_North$nlogmean, NLOG_VE_sup_zero_North$slamean, method = "kendall")
+
+cor.test(NLOG_VE_sup_zero_Moz$nlogmean, NLOG_VE_sup_zero_Moz$SSCImean, method = "kendall")
+cor.test(NLOG_VE_sup_zero_North$nlogmean, NLOG_VE_sup_zero_North$SSCImean, method = "kendall")
+
+cor.test(NLOG_VE_sup_zero_Moz$nlogmean, NLOG_VE_sup_zero_Moz$FSLEmean, method = "kendall")
+cor.test(NLOG_VE_sup_zero_North$nlogmean, NLOG_VE_sup_zero_North$FSLEmean, method = "kendall")
+
+cor.test(NLOG_VE_sup_zero_Moz$nlogmean, NLOG_VE_sup_zero_Moz$MNmean, method = "kendall")
+cor.test(NLOG_VE_sup_zero_North$nlogmean, NLOG_VE_sup_zero_North$MNmean, method = "kendall")
+
+wilcox.test(NLOG_VE_sup_zero_Moz$nlogmean, NLOG_VE_sup_zero_North$nlogmean)
+```
+
+# IV : Construction of models
+## GAM for the WIO zone
+
+```{r}
+GAM_North <- mgcv::gam(logNLOG ~ s(chlacr, k = 6) + s(slacr, k = 6) +
+                         s(SSCIcr, k = 6) + s(FSLEcr, k = 6) + s(MNcr, k = 6),
+                       data = NLOG_VE_sup_zero_North)
+summary(GAM_North)
+
+GAM_North2 <- stepAIC.gam(GAM_North)
+summary(GAM_North2)
+
+par(mfrow = c(2,2))
+gam.check(GAM_North2)
+
+plot(GAM_North2,residuals=T,pages=1)
+```
+
+## Linear model for the MOZ zone
+
+```{r LM Moz}
+LM_Moz <- lm(logNLOG ~ chlacr + slacr + SSCIcr + FSLEcr + MNcr, data = NLOG_VE_sup_zero_Moz)
+LM_Moz2 <- stepAIC(LM_Moz)
+summary(LM_Moz2)
+
+par(mfrow = c(2, 2))
+plot(LM_Moz2)
+```
+
+## GAM for the MOZ zone
+
+```{r GAM Moz}
+GAM_Moz <- mgcv::gam(logNLOG ~ s(chlacr, k = 6) + s(slacr, k = 6) +
+                       s(SSCIcr, k = 6) + s(FSLEcr, k = 6) + s(MNcr, k = 6),
+                     data = NLOG_VE_sup_zero_Moz)
+summary(GAM_Moz)
+
+GAM_Moz2 <- stepAIC.gam(GAM_Moz)
+summary(GAM_Moz2)
+
+par(mfrow = c(2,2))
+gam.check(GAM_Moz2)
+
+plot(GAM_Moz2,residuals=T,pages=1)
+```
+

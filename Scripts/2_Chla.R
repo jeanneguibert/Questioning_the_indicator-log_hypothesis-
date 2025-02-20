@@ -39,12 +39,9 @@ for (i in 1:length(CHLA_FILE)){
   if (time_unit == "seconds"){time_unit <- "secs"}
   
   mydate <- date_origin + as.difftime(time, units = time_unit)
-  myyear<-year(mydate)
-  mymonth<-month(mydate)
-  myday<-day(mydate)
   
   #extract chla
-  varchla <- "CHL" 
+  varchla <- grep('CHL', names(nc$var), ignore.case = T, value = T)
   T_array <- ncvar_get(nc, varchla)
   
   #variable's attributes
@@ -54,28 +51,41 @@ for (i in 1:length(CHLA_FILE)){
   
   ## put NA values for missing values in the NetCDF file
   T_array[T_array == fillvalue$value] <- NA
+  dimnames(T_array)[[1]] <- lon
+  dimnames(T_array)[[2]] <- lat
+  dimnames(T_array)[[3]] <- as.character(mydate)
   
-  #estimate mean for each year, month and 2° cell
-  grid <- expand.grid(lon=lon, lat=lat)  #create a set of lonlat pairs of values, one for each element in the tem_array
+  # Average over time and spatial resolution
+  averaged_results <- average_blocks_fast(array = T_array,
+                                          lon_res = resolution, lat_res = resolution,
+                                          timeresolution = timeresolution)
+  
+  averaged_means <- averaged_results$means
+  averaged_sds <- averaged_results$sds
+  unique_time_groups <- averaged_results$time_groups
+  
+  # Convert the results to a data frame
+  df_mean <- as.data.frame(
+    expand.grid(
+      lon_grid = averaged_results$lon_grid,
+      lat_grid = averaged_results$lat_grid,
+      time = unique_time_groups
+    )
+  )
+  df_mean$chlamean <- as.vector(averaged_means)
+  df_mean$chlasd <- as.vector(averaged_sds)
+  
   if (i == 1){
-    df_meantot<-data.frame(matrix(nrow=0,ncol=6))
-    colnames(df_meantot)=c("lat_grid", "lon_grid","chlamean", "chlasd", "year", "month")
+    df_meantot<-data.frame(matrix(nrow=0,ncol=5))
+    colnames(df_meantot)=c("lon_grid", "lat_grid", "time", "chlamean", "chlasd")
   }
-  for (i in 1:length(mydate)){
-    date <- mydate[i]
-    iyear = lubridate::year(date)
-    imonth = lubridate::month(date)
-    datesel<-myyear==iyear & mymonth==imonth
-    T_slice<-T_array[,,datesel]
-    grid$chla<-as.vector(T_slice)
-    df<-subset(grid,!is.na(chla))
-    df$lat_grid<-resolution*floor(df$lat/resolution) 
-    df$lon_grid<-resolution*floor(df$lon/resolution) 
-    df_mean<-ddply(df,.(lat_grid,lon_grid),summarize,chlamean=mean(chla),chlasd=sd(chla))#moyenne
-    df_mean$year<-iyear
-    df_mean$month<-imonth
-    df_meantot<-rbind(df_meantot,df_mean)
-  }
+  
+  df_meantot<-rbind(df_meantot,df_mean)
+  
 }
 
-write.csv(df_meantot,file=file.path(PATH_OUTPUT,"Chla_mean.csv"),row.names = F)
+write.csv(df_meantot,file=file.path(PATH_OUTPUT,"Chla_mean.csv"), row.names = F)
+
+
+
+
