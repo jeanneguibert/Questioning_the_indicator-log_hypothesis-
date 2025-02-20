@@ -6,7 +6,7 @@
 
 These are the scripts which were used to generate the results presented in the following study:
 
-Guibert J., Dupaix A., Lengaigne M. & Capello M. (in press) Questioning the validity of the indicator-log hypothesis for tropical tuna in the Western Indian Ocean.
+Guibert J., Dupaix A., Lengaigne M. & Capello M. (in revision) Questioning the validity of the indicator-log hypothesis for tropical tuna in the Western Indian Ocean. _Marine Ecology Progress Series_
 
 Figures and statistical analyses of the study are available in the `Figure_and_stats` folder: `Plots_Github.Rmd` and `Statistical_analyses_Github.Rmd` generates the figures and the statistical tests respectively, of the main study and the supplementary materials.
 
